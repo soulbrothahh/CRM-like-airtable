@@ -23,6 +23,7 @@ phone as an app (PWA), with **CSV import/export** and **JSON backups**.
 - **Status & priority color badges** throughout.
 - **Import / Export** — import creator-list CSVs (smart header matching), export CSV, and download full JSON backups.
 - **Private login** — when cloud sync is on, the app is protected behind an email/password account (on-device mode stays login-free).
+- **Daily reminder emails** (optional) — a once-a-day digest of due follow-ups, ready-to-ship bottles and missing addresses, sent via a scheduled job.
 - **Installable PWA** — add it to your iPhone/Android home screen and it opens like a native app.
 
 ---
@@ -91,6 +92,32 @@ Now NuKava CRM has its own icon on your home screen and opens full-screen like a
 
 ---
 
+## 📧 Daily follow-up reminder emails (optional)
+
+Get a once-a-day email digest of everyone whose follow-up is **due or overdue**, plus
+who's **ready to ship** and who's **missing an address**. Requires cloud mode (Supabase)
++ a free [Resend](https://resend.com) account, and a Vercel deployment (Vercel runs the
+daily schedule for you — see [`vercel.json`](./vercel.json)).
+
+1. Sign up at **[resend.com](https://resend.com)** and create an **API key**.
+   - To send to any address you must verify a domain. To just test it quickly, the
+     default sender (`onboarding@resend.dev`) delivers to the email on your Resend account.
+2. In **Vercel → your project → Settings → Environment Variables**, add:
+   | Variable | Value |
+   |---|---|
+   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → **service_role** key (secret) |
+   | `RESEND_API_KEY` | your Resend API key |
+   | `REMINDER_EMAIL_TO` | the email that should receive reminders |
+   | `REMINDER_EMAIL_FROM` | leave default, or `NuKava <you@yourdomain.com>` if verified |
+   | `CRON_SECRET` | any long random string (protects the endpoint) |
+   | `NEXT_PUBLIC_APP_URL` | your app URL, e.g. `https://nukava.vercel.app` |
+3. **Redeploy.** Vercel will hit `/api/reminders` every day at **15:00 UTC** (~8–9am Mountain).
+   Change the time by editing the `schedule` in `vercel.json` ([cron syntax](https://crontab.guru)).
+4. **Test it now:** visit `https://YOUR-APP.vercel.app/api/reminders?key=YOUR_CRON_SECRET`.
+   You'll get a JSON result and (if anything is due) an email. Empty days send nothing.
+
+---
+
 ## 🗂️ Daily workflow
 
 1. **Add** a contact (the big **+ Add** button on the Dashboard or Contacts).
@@ -124,6 +151,7 @@ src/
     contacts/[id]/page.tsx Contact profile + interaction timeline
     bottles/page.tsx      Bottle-sending dashboard
     data/page.tsx         Import / export / backup
+    api/reminders/route.ts Daily follow-up reminder email (Vercel Cron)
   components/             UI: nav, badges, forms, table, cards, quick actions
   lib/
     types.ts              Data model
@@ -135,6 +163,7 @@ src/
     seed.ts               Sample contacts (on-device mode)
     helpers.ts            Dates, formatting, small utilities
 supabase/schema.sql       Database schema + seed (paste into Supabase)
+vercel.json               Daily cron schedule for reminder emails
 public/                   PWA manifest, service worker, app icons
 ```
 
@@ -144,6 +173,6 @@ Next.js 14 (App Router) · TypeScript · Tailwind CSS · Supabase · PWA (manife
 
 ## 💡 Ideas for later
 
-- Email/SMS reminders for due follow-ups
+- SMS reminders (in addition to email)
 - Bulk actions and CSV column-mapping UI
 - Photo attachments and tags
