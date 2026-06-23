@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ContactForm } from "@/components/ContactForm";
 import { Modal } from "@/components/Modal";
 import { QuickActions } from "@/components/QuickActions";
-import { BottleStatusBadge, StatusBadge } from "@/components/Badge";
+import { BottleStatusBadge, ScoreBadge, StatusBadge } from "@/components/Badge";
 import { formatDate, isOverdue, isToday, initials, todayISO } from "@/lib/helpers";
 import type { Contact, NewContact } from "@/lib/types";
 
@@ -38,6 +38,10 @@ export default function Dashboard() {
     );
     const sales = contacts.reduce((s, c) => s + (c.sales_generated ?? 0), 0);
     const bottlesToShip = ready.reduce((s, c) => s + (c.bottle_quantity ?? 1), 0);
+    const hotLeads = contacts
+      .filter((c) => (c.lead_score ?? 0) > 0)
+      .sort((a, b) => (b.lead_score ?? 0) - (a.lead_score ?? 0))
+      .slice(0, 5);
     return {
       total: contacts.length,
       approved: approved.length,
@@ -46,6 +50,7 @@ export default function Dashboard() {
       sent: sent.length,
       missingAddress,
       hot: hot.length,
+      hotLeads,
       todayFollow: todayFollow.sort((a, b) =>
         (a.next_follow_up_date ?? "").localeCompare(b.next_follow_up_date ?? "")
       ),
@@ -94,6 +99,21 @@ export default function Dashboard() {
             </div>
 
             <UpcomingEvents />
+
+            {/* Hottest leads by engagement signals */}
+            {stats.hotLeads.length > 0 && (
+              <Panel
+                title="🔥 Hottest Leads"
+                hint="By engagement signals"
+                empty=""
+                items={stats.hotLeads}
+                render={(c) => (
+                  <Row key={c.id} contact={c}>
+                    <ScoreBadge score={c.lead_score ?? 0} />
+                  </Row>
+                )}
+              />
+            )}
 
             {/* Today's follow-ups */}
             <Panel

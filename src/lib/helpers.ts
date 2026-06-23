@@ -39,6 +39,9 @@ export function blankContact(): NewContact {
     ambassador_signup: false,
     discount_code: "",
     sales_generated: null,
+    visitor_id: null,
+    lead_score: 0,
+    lead_score_updated_at: null,
     created_at: "",
     updated_at: "",
   } as unknown as NewContact;

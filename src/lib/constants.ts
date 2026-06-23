@@ -261,3 +261,40 @@ export const SEQUENCE_CHANNELS: import("./types").SequenceChannel[] = [
   "Text",
   "Call",
 ];
+
+// ---------------- Activities / signals ----------------
+
+export const ACTIVITY_ICONS: Record<import("./types").ActivityType, string> = {
+  page_view: "👀",
+  session: "🌐",
+  form_submit: "📝",
+  email_sent: "📤",
+  email_open: "📬",
+  email_click: "🔗",
+  email_reply: "↩️",
+  social_follow: "➕",
+  social_mention: "💬",
+  social_dm: "✉️",
+  note: "🗒️",
+};
+
+export const ACTIVITY_LABELS: Record<import("./types").ActivityType, string> = {
+  page_view: "Page view",
+  session: "Site visit",
+  form_submit: "Form submit",
+  email_sent: "Email sent",
+  email_open: "Email open",
+  email_click: "Email click",
+  email_reply: "Email reply",
+  social_follow: "Social follow",
+  social_mention: "Social mention",
+  social_dm: "Social DM",
+  note: "Note",
+};
+
+// Lead-score band colors (reuse the warm badge tints).
+export const SCORE_BAND_COLORS: Record<import("./scoring").ScoreBand, string> = {
+  Cold: NEUTRAL,
+  Warm: AMBER,
+  Hot: CLAY,
+};

@@ -97,6 +97,10 @@ export interface Contact {
   ambassador_signup: boolean;
   discount_code: string;
   sales_generated: number | null;
+  // engagement / web analytics
+  visitor_id: string | null; // stitched anonymous device id
+  lead_score: number; // signal-driven engagement score
+  lead_score_updated_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -243,3 +247,38 @@ export interface Sequence {
 }
 
 export type NewSequence = Omit<Sequence, "id" | "created_at" | "updated_at">;
+
+// ---------------- Activities / signals (the unified timeline) ----------------
+// Every signal — web session, email open, form fill, social touch — becomes a
+// typed activity. Activities can be anonymous (visitor_id only) until a form
+// fill stitches them onto a contact.
+
+export type ActivitySource = "web" | "email" | "social" | "form" | "manual" | "system";
+
+export type ActivityType =
+  | "page_view"
+  | "session" // a visit / session start
+  | "form_submit"
+  | "email_sent"
+  | "email_open"
+  | "email_click"
+  | "email_reply"
+  | "social_follow"
+  | "social_mention"
+  | "social_dm"
+  | "note";
+
+export interface Activity {
+  id: string;
+  contact_id: string | null; // null = anonymous, not yet identified
+  visitor_id: string | null; // device id, used to stitch on form fill
+  source: ActivitySource;
+  type: ActivityType;
+  title: string; // human-readable summary
+  url: string; // page / link, if relevant
+  metadata: Record<string, unknown>; // arbitrary properties
+  occurred_at: string; // ISO timestamp the signal happened
+  created_at: string;
+}
+
+export type NewActivity = Omit<Activity, "id" | "created_at">;
