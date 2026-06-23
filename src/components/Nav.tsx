@@ -69,13 +69,11 @@ export function BottomNav() {
   );
 }
 
-export function Brand() {
+export function Brand({ className = "h-7" }: { className?: string }) {
   return (
-    <Link href="/" className="flex items-baseline gap-2">
-      <span className="text-2xl font-extrabold lowercase tracking-tight text-night-900">
-        n&uacute;kava
-      </span>
-      <span className="h-1.5 w-1.5 translate-y-[-2px] rounded-full bg-gold-400" />
+    <Link href="/" aria-label="nukava" className="inline-flex items-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/nukava-logo.svg" alt="nukava" className={`${className} w-auto`} />
     </Link>
   );
 }

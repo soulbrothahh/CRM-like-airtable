@@ -51,7 +51,7 @@ function LoginScreen() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="card w-full max-w-sm p-6">
         <div className="mb-6 flex justify-center">
-          <Brand />
+          <Brand className="h-9" />
         </div>
         <p className="-mt-2 mb-1 text-center text-[11px] font-semibold uppercase tracking-widest text-gold-600">
           Built for better moments
