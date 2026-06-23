@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-cream-100 text-night-900 antialiased;
+  /* warm soft gradients + a subtle island-wave texture (very low contrast) */
+  background-image: radial-gradient(
+      1100px 520px at 88% -8%,
+      rgba(216, 163, 62, 0.1),
+      transparent 60%
+    ),
+    radial-gradient(900px 480px at -5% 0%, rgba(110, 130, 104, 0.08), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24'%3E%3Cpath d='M0 18 Q12 6 24 18 T48 18' fill='none' stroke='%238A5A3B' stroke-opacity='0.05' stroke-width='1.4'/%3E%3C/svg%3E");
+  background-attachment: fixed, fixed, fixed;
+}
+
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-sand-400 rounded-full;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    @apply tracking-tight;
+  }
+  a,
+  button {
+    @apply transition;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl bg-cream-50 ring-1 ring-night-900/5 shadow-soft transition;
+  }
+  .card-hover {
+    @apply hover:-translate-y-0.5 hover:shadow-lift;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-gold-400/50 disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-night-900 text-cream-100 shadow-soft hover:bg-night-800 hover:shadow-lift;
+  }
+  .btn-gold {
+    @apply btn bg-gold-400 text-night-900 shadow-gold hover:bg-gold-500;
+  }
+  .btn-ghost {
+    @apply btn bg-cream-50 text-night-800 ring-1 ring-night-900/10 hover:bg-cream-200;
+  }
+  .btn-subtle {
+    @apply btn font-medium text-taupe-600 hover:bg-night-900/[0.04];
+  }
+  .input {
+    @apply w-full rounded-2xl bg-white px-3.5 py-2.5 text-sm text-night-900 ring-1 ring-night-900/10 placeholder:text-taupe-400 focus:outline-none focus:ring-2 focus:ring-gold-400/50;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-taupe-500;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset whitespace-nowrap;
+  }
+  .chip {
+    @apply whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold ring-1 transition;
+  }
+  .chip-on {
+    @apply chip bg-night-900 text-cream-100 ring-night-900;
+  }
+  .chip-off {
+    @apply chip bg-cream-50 text-taupe-600 ring-night-900/10 hover:bg-cream-200;
+  }
+}
