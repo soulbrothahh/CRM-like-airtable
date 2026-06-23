@@ -78,6 +78,27 @@ This is optional but recommended — it's free and gives you the same data on ev
 
 ---
 
+## 👥 Adding teammates / admins (shared workspace)
+
+NuKava CRM is a **shared workspace**: every logged-in account sees and edits the same
+contacts, deals, and activity. That's exactly what a small admin team wants. To add
+someone (e.g. Fine or another admin):
+
+1. **Keep public sign-ups OFF** — Authentication → Providers → Email → "Allow new
+   users to sign up" = off. This stops anyone with the URL from registering.
+2. **Add each admin yourself** — Authentication → **Users** → **Add user** → enter
+   their email + a temporary password (or send an invite).
+3. They log in at your app URL and immediately see the same shared data.
+4. Use the **"Owner / assigned to"** field on every contact and deal to track who's
+   responsible for what.
+
+**Notes:**
+- Every admin has full access (view / edit / delete everything) — right for a trusted team.
+- Want **private per-person data** or **view-only roles**? That's a larger feature.
+  `schema.sql` includes a per-user isolation starting point, and roles can be layered on.
+
+---
+
 ## 📱 Put it on your phone (deploy free with Vercel)
 
 1. Push this repo to GitHub (already done if you're reading this there).
