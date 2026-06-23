@@ -14,6 +14,8 @@ phone as an app (PWA), with **CSV import/export** and **JSON backups**.
 
 - **Dashboard** — the numbers that matter, *Today's Follow-Ups*, *Ready to Ship*, and *Missing Address* sections.
 - **Contacts** — Airtable-style **table view** with **inline editing** and **sortable columns**, plus a phone-friendly **card view**.
+- **Deals pipeline** — a **B2B/partnership deal-flow board** (Lead → Contacted → Qualified → Meeting → Proposal → Negotiation → Won/Lost) with pipeline value, weighted forecast, win rate, per-deal activity log, and next-step tracking. Move stages with a tap.
+- **Outreach toolkit** — ready-to-send **B2B and ambassador** message templates that auto-fill with a contact's or deal's details (one-tap copy), plus optional **AI-personalized drafting**.
 - **Saved views** — All, Hot Leads, Kava Giveaway List, Ready to Send, Missing Address, Bottles Sent, Needs Follow-Up, Creators, Agencies, Ambassadors, Wholesale/Retail, Utah Contacts.
 - **Search & filters** — search by name, handle, city, status or notes; filter chips for type, status, priority and "bottle sent?".
 - **Contact profiles** — full info, social links, bottle/shipping details, follow-up reminders, and an **interaction timeline**.
@@ -118,6 +120,31 @@ daily schedule for you — see [`vercel.json`](./vercel.json)).
 
 ---
 
+## ✨ AI-personalized outreach (optional)
+
+The **Outreach** tab works out of the box with built-in templates. To also draft
+custom, personalized messages with AI:
+
+1. Get an API key from **[console.anthropic.com](https://console.anthropic.com)**.
+2. Add it to Vercel (or `.env.local`) as `ANTHROPIC_API_KEY` (server-only — keep it secret).
+   Optionally set `OUTREACH_MODEL` to override the default model.
+3. Redeploy. The Outreach tab's **Generate with AI** button is now live. Without the key,
+   the button is disabled and templates still work.
+
+---
+
+## 🤝 Deal-flow workflow
+
+1. Add a **deal** (company, type, value, expected close) from the **Deals** tab.
+2. Work it across the **pipeline board** — tap a card's stage dropdown to advance it
+   (Lead → … → Won/Lost). The dashboard tallies pipeline value, weighted forecast, and win rate.
+3. Log calls, emails, meetings, and proposals on the **deal detail page**; the latest
+   "next step" stays in sync and overdue steps are flagged.
+4. Use the **Outreach** tab to message the deal's contact — pick a template (it auto-fills
+   their name/company/handle) or generate a tailored message with AI, then copy and send.
+
+---
+
 ## 🗂️ Daily workflow
 
 1. **Add** a contact (the big **+ Add** button on the Dashboard or Contacts).
@@ -150,8 +177,12 @@ src/
     contacts/page.tsx     Table + card views, search, filters, saved views
     contacts/[id]/page.tsx Contact profile + interaction timeline
     bottles/page.tsx      Bottle-sending dashboard
+    deals/page.tsx        Deal pipeline board + list + metrics
+    deals/[id]/page.tsx   Deal detail + activity log
+    outreach/page.tsx     Outreach templates + AI drafting
     data/page.tsx         Import / export / backup
     api/reminders/route.ts Daily follow-up reminder email (Vercel Cron)
+    api/outreach/route.ts  Optional AI outreach drafting (Anthropic)
   components/             UI: nav, badges, forms, table, cards, quick actions
   lib/
     types.ts              Data model

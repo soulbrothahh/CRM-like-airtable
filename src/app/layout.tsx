@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { AuthGate } from "@/components/AuthGate";
 import { DataProvider } from "@/components/DataProvider";
+import { DealsProvider } from "@/components/DealsProvider";
 import { BottomNav, Sidebar } from "@/components/Nav";
 import { ServiceWorker } from "@/components/ServiceWorker";
 
@@ -35,11 +36,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <AuthGate>
             <DataProvider>
-              <div className="flex min-h-screen">
-                <Sidebar />
-                <main className="flex-1 pb-24 md:pb-8">{children}</main>
-              </div>
-              <BottomNav />
+              <DealsProvider>
+                <div className="flex min-h-screen">
+                  <Sidebar />
+                  <main className="flex-1 pb-24 md:pb-8">{children}</main>
+                </div>
+                <BottomNav />
+              </DealsProvider>
             </DataProvider>
           </AuthGate>
           <ServiceWorker />

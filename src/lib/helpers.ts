@@ -89,6 +89,11 @@ export function tiktokUrl(handle: string): string | null {
   return "https://tiktok.com/@" + handle.replace(/^@/, "");
 }
 
+export function formatMoney(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  return "$" + Math.round(n).toLocaleString();
+}
+
 export function fullContact(input: NewContact): Contact {
   const ts = new Date().toISOString();
   return {

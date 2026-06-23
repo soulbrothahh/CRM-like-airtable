@@ -1,7 +1,15 @@
 // Minimal service worker for NuKava CRM — enables installability and a basic
 // offline app shell. App data is handled by Supabase / localStorage, not here.
 const CACHE = "nukava-shell-v1";
-const SHELL = ["/", "/contacts", "/bottles", "/data", "/manifest.json"];
+const SHELL = [
+  "/",
+  "/contacts",
+  "/deals",
+  "/bottles",
+  "/outreach",
+  "/data",
+  "/manifest.json",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));

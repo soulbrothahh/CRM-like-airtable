@@ -6,10 +6,12 @@ import { useData } from "./DataProvider";
 import { useAuth } from "./AuthProvider";
 
 const LINKS = [
-  { href: "/", label: "Dashboard", icon: "🏠" },
-  { href: "/contacts", label: "Contacts", icon: "👥" },
-  { href: "/bottles", label: "Bottles", icon: "🍶" },
-  { href: "/data", label: "Import / Export", icon: "⇄" },
+  { href: "/", label: "Dashboard", icon: "🏠", short: "Home" },
+  { href: "/contacts", label: "Contacts", icon: "👥", short: "People" },
+  { href: "/deals", label: "Deals", icon: "🤝", short: "Deals" },
+  { href: "/bottles", label: "Bottles", icon: "🍶", short: "Bottles" },
+  { href: "/outreach", label: "Outreach", icon: "✉️", short: "Reach" },
+  { href: "/data", label: "Import / Export", icon: "⇄", short: "Data" },
 ];
 
 export function Sidebar() {
@@ -54,12 +56,12 @@ export function BottomNav() {
           <Link
             key={l.href}
             href={l.href}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium ${
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium ${
               active ? "text-kava-300" : "text-slate-400"
             }`}
           >
             <span className="text-lg">{l.icon}</span>
-            {l.label === "Import / Export" ? "Data" : l.label}
+            {l.short}
           </Link>
         );
       })}

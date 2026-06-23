@@ -97,3 +97,67 @@ export interface Interaction {
 
 export type NewContact = Omit<Contact, "id" | "created_at" | "updated_at">;
 export type NewInteraction = Omit<Interaction, "id" | "created_at">;
+
+// ---------------- Deal flow (B2B pipeline) ----------------
+
+export type DealType =
+  | "Wholesale"
+  | "Distribution"
+  | "Retail"
+  | "Partnership"
+  | "Ambassador"
+  | "Sponsorship"
+  | "Other";
+
+export type DealStage =
+  | "Lead"
+  | "Contacted"
+  | "Qualified"
+  | "Meeting"
+  | "Proposal"
+  | "Negotiation"
+  | "Won"
+  | "Lost";
+
+export type DealActivityType =
+  | "Call"
+  | "Email"
+  | "DM"
+  | "Meeting"
+  | "Sample sent"
+  | "Proposal sent"
+  | "Follow-up"
+  | "Contract"
+  | "Note";
+
+export interface Deal {
+  id: string;
+  title: string;
+  company: string;
+  contact_id: string | null; // optional link to a person contact
+  deal_type: DealType;
+  stage: DealStage;
+  value: number | null; // deal size in $
+  probability: number | null; // 0-100; blank = use stage default
+  expected_close_date: string | null;
+  owner: string;
+  source: string;
+  next_step: string;
+  next_step_date: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DealActivity {
+  id: string;
+  deal_id: string;
+  date: string; // YYYY-MM-DD
+  type: DealActivityType;
+  notes: string;
+  next_action: string;
+  created_at: string;
+}
+
+export type NewDeal = Omit<Deal, "id" | "created_at" | "updated_at">;
+export type NewDealActivity = Omit<DealActivity, "id" | "created_at">;

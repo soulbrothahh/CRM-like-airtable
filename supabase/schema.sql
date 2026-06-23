@@ -57,6 +57,41 @@ create index if not exists contacts_updated_at_idx on public.contacts(updated_at
 create index if not exists contacts_status_idx on public.contacts(status);
 create index if not exists contacts_bottle_status_idx on public.contacts(bottle_status);
 
+-- ---------- deals (B2B pipeline) ----------
+create table if not exists public.deals (
+  id                  uuid primary key default gen_random_uuid(),
+  title               text not null default '',
+  company             text not null default '',
+  contact_id          uuid references public.contacts(id) on delete set null,
+  deal_type           text not null default 'Wholesale',
+  stage               text not null default 'Lead',
+  value               numeric,
+  probability         integer,
+  expected_close_date date,
+  owner               text not null default '',
+  source              text not null default '',
+  next_step           text not null default '',
+  next_step_date      date,
+  notes               text not null default '',
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+
+-- ---------- deal_activities ----------
+create table if not exists public.deal_activities (
+  id          uuid primary key default gen_random_uuid(),
+  deal_id     uuid not null references public.deals(id) on delete cascade,
+  date        date not null default current_date,
+  type        text not null default 'Call',
+  notes       text not null default '',
+  next_action text not null default '',
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists deals_updated_at_idx on public.deals(updated_at desc);
+create index if not exists deals_stage_idx on public.deals(stage);
+create index if not exists deal_activities_deal_id_idx on public.deal_activities(deal_id);
+
 -- ============================================================
 -- Row Level Security
 -- ------------------------------------------------------------
@@ -71,13 +106,17 @@ create index if not exists contacts_bottle_status_idx on public.contacts(bottle_
 --
 -- (Prefer strict per-user isolation? See the commented block at the bottom.)
 -- ============================================================
-alter table public.contacts     enable row level security;
-alter table public.interactions enable row level security;
+alter table public.contacts        enable row level security;
+alter table public.interactions    enable row level security;
+alter table public.deals           enable row level security;
+alter table public.deal_activities enable row level security;
 
 drop policy if exists "anon full access contacts"      on public.contacts;
 drop policy if exists "anon full access interactions"  on public.interactions;
 drop policy if exists "authed full access contacts"     on public.contacts;
 drop policy if exists "authed full access interactions" on public.interactions;
+drop policy if exists "authed full access deals"           on public.deals;
+drop policy if exists "authed full access deal_activities" on public.deal_activities;
 
 create policy "authed full access contacts"
   on public.contacts for all to authenticated
@@ -85,6 +124,14 @@ create policy "authed full access contacts"
 
 create policy "authed full access interactions"
   on public.interactions for all to authenticated
+  using (true) with check (true);
+
+create policy "authed full access deals"
+  on public.deals for all to authenticated
+  using (true) with check (true);
+
+create policy "authed full access deal_activities"
+  on public.deal_activities for all to authenticated
   using (true) with check (true);
 
 -- ============================================================
@@ -108,6 +155,16 @@ values
   ('Bianca Ortiz','@miamiglow','@miamiglow','305-555-0166','bianca@miamiglow.co','Miami','FL','Creator','Warm','Warm','Needs Follow-Up','Instagram comment',63000,'Beauty / wellness','Taylor','Interested but went quiet. Needs a nudge.',current_date-12,current_date-4,true,'Medium','Need address',1,'','','',null,null,false,false,'',0),
   ('Greenleaf Distributors','','','503-555-0150','orders@greenleafdist.com','Portland','OR','Wholesale','Cold','Cold','New Lead','Trade show',null,'Regional distributor','Taylor','Distributes to 40+ PNW stores. Wants pricing.',null,current_date+4,false,'Low','Not planned',null,'','','',null,null,false,false,'',0),
   ('Tyler Brooks','@tylerbrooksfit','@tylerbrooksfit','801-555-0133','tyler.brooks@gmail.com','Ogden','UT','Event Contact','Warm','Warm','Interested','Met at NuKava pop-up',14000,'Fitness / supplements','Taylor','Grabbed a sample at the booth, loved it.',current_date-1,current_date+2,true,'Medium','Ready to send',1,'Tyler Brooks','390 Washington Blvd, Ogden, UT 84401','',null,null,false,false,'',0);
+
+-- Sample deals
+insert into public.deals
+  (title, company, deal_type, stage, value, expected_close_date, owner, source, next_step, next_step_date, notes)
+values
+  ('Coastal Health Market — wholesale','Coastal Health Market','Wholesale','Qualified',4800,current_date+21,'Taylor','Cold outreach','Send wholesale pricing + sample box',current_date+2,'Independent market, 1 location. Wants to trial 2 SKUs.'),
+  ('Greenleaf Distributors — PNW distribution','Greenleaf Distributors','Distribution','Meeting',22000,current_date+40,'Taylor','Trade show','Discovery call with buying team',current_date-1,'Covers 40+ stores in the PNW. Asked for distributor terms.'),
+  ('BrightReach Agency — creator bundle','BrightReach Agency','Partnership','Proposal',9000,current_date+14,'Taylor','Referral','Follow up on proposal',current_date+1,'Seeding + wholesale combo across their roster.'),
+  ('Devin Carter — ambassador renewal','Devin Carter','Ambassador','Negotiation',1500,current_date+7,'Taylor','Existing ambassador','Agree on monthly content + commission',current_date+3,'Renewing for another quarter, wants higher commission.'),
+  ('Summit Gyms — sponsorship','Summit Gyms','Sponsorship','Won',6000,current_date-5,'Taylor','Event contact','Deliver first shipment',current_date+4,'Closed — 3-location gym chain, branded cooler placement.');
 
 -- ============================================================
 -- OPTIONAL: strict per-user isolation (each account sees only its own data).
