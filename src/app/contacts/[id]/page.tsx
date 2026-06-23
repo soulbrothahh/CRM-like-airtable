@@ -9,6 +9,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { Modal } from "@/components/Modal";
 import { QuickActions } from "@/components/QuickActions";
 import { Select } from "@/components/ContactForm";
+import { SequenceCard } from "@/components/SequenceCard";
 import {
   BottleStatusBadge,
   OutreachStatusBadge,
@@ -140,6 +141,7 @@ export default function ContactDetail() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Left: info */}
         <div className="space-y-4 lg:col-span-1">
+          <SequenceCard contact={c} onChange={load} />
           <InfoCard title="Contact info">
             <Info label="Phone" value={c.phone} />
             <Info label="Email" value={c.email} />

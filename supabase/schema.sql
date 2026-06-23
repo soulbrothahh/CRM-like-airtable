@@ -24,6 +24,9 @@ create table if not exists public.contacts (
   tags                  text[] not null default '{}',
   event_id              uuid,  -- "Met at" — references events(id)
   outreach_status       text not null default 'Not contacted',
+  sequence_id           uuid,  -- enrolled cadence — references sequences(id)
+  sequence_step         integer not null default 0,
+  sequence_started      date,
   notes                 text not null default '',
   last_contacted_date   date,
   next_follow_up_date   date,
@@ -119,6 +122,18 @@ create table if not exists public.events (
 create index if not exists events_date_idx on public.events(date);
 create index if not exists contacts_event_id_idx on public.contacts(event_id);
 
+-- ---------- sequences (multi-step outreach cadences) ----------
+create table if not exists public.sequences (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null default '',
+  description text not null default '',
+  steps       jsonb not null default '[]',  -- [{day, channel, label, body}]
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists contacts_sequence_id_idx on public.contacts(sequence_id);
+
 -- ============================================================
 -- Row Level Security
 -- ------------------------------------------------------------
@@ -138,6 +153,7 @@ alter table public.interactions    enable row level security;
 alter table public.deals           enable row level security;
 alter table public.deal_activities enable row level security;
 alter table public.events          enable row level security;
+alter table public.sequences       enable row level security;
 
 drop policy if exists "anon full access contacts"      on public.contacts;
 drop policy if exists "anon full access interactions"  on public.interactions;
@@ -165,6 +181,11 @@ create policy "authed full access deal_activities"
 drop policy if exists "authed full access events" on public.events;
 create policy "authed full access events"
   on public.events for all to authenticated
+  using (true) with check (true);
+
+drop policy if exists "authed full access sequences" on public.sequences;
+create policy "authed full access sequences"
+  on public.sequences for all to authenticated
   using (true) with check (true);
 
 -- ============================================================

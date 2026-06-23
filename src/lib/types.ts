@@ -75,6 +75,10 @@ export interface Contact {
   tags: string[];
   event_id: string | null; // "Met at" — links to a CrmEvent
   outreach_status: OutreachStatus;
+  // sequence enrollment (cadence engine)
+  sequence_id: string | null;
+  sequence_step: number; // current step index (0-based)
+  sequence_started: string | null; // YYYY-MM-DD
   notes: string;
   last_contacted_date: string | null; // YYYY-MM-DD
   next_follow_up_date: string | null; // YYYY-MM-DD
@@ -217,3 +221,25 @@ export interface CrmEvent {
 }
 
 export type NewEvent = Omit<CrmEvent, "id" | "created_at" | "updated_at">;
+
+// ---------------- Sequences / cadences ----------------
+
+export type SequenceChannel = "DM" | "Email" | "Text" | "Call";
+
+export interface SequenceStep {
+  day: number; // days after enrollment this step is due
+  channel: SequenceChannel;
+  label: string; // short description of the touch
+  body: string; // optional message template
+}
+
+export interface Sequence {
+  id: string;
+  name: string;
+  description: string;
+  steps: SequenceStep[];
+  created_at: string;
+  updated_at: string;
+}
+
+export type NewSequence = Omit<Sequence, "id" | "created_at" | "updated_at">;
