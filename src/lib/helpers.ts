@@ -18,6 +18,7 @@ export function blankContact(): NewContact {
     audience_type: "",
     owner: "",
     tags: [],
+    event_id: null,
     notes: "",
     last_contacted_date: null,
     next_follow_up_date: null,

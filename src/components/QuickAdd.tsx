@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useData } from "./DataProvider";
+import { useEvents } from "./EventsProvider";
 import { Modal } from "./Modal";
 import { blankContact } from "@/lib/helpers";
 
@@ -9,11 +10,13 @@ import { blankContact } from "@/lib/helpers";
 // save in a couple taps, optionally keep adding.
 export function QuickAdd() {
   const { create } = useData();
+  const { events } = useEvents();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [handle, setHandle] = useState("");
   const [city, setCity] = useState("");
   const [tags, setTags] = useState("");
+  const [eventId, setEventId] = useState(""); // kept across adds for event sessions
   const [saving, setSaving] = useState(false);
   const [justAdded, setJustAdded] = useState<string | null>(null);
 
@@ -28,12 +31,14 @@ export function QuickAdd() {
     if (!name.trim()) return;
     setSaving(true);
     try {
+      const ev = events.find((e) => e.id === eventId);
       await create({
         ...blankContact(),
         name: name.trim(),
         instagram: handle.trim(),
-        city: city.trim(),
-        source: "Met at event",
+        city: city.trim() || ev?.city || "",
+        source: ev ? `Met at ${ev.name}` : "Met at event",
+        event_id: eventId || null,
         tags: tags
           .split(",")
           .map((t) => t.trim())
@@ -109,6 +114,23 @@ export function QuickAdd() {
               placeholder="e.g. event, gym owner"
             />
           </div>
+          {events.length > 0 && (
+            <div>
+              <label className="label">Met at (event)</label>
+              <select
+                className="input"
+                value={eventId}
+                onChange={(e) => setEventId(e.target.value)}
+              >
+                <option value="">— none —</option>
+                {events.map((ev) => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {justAdded && (
             <p className="text-sm font-medium text-sage-600">

@@ -22,6 +22,7 @@ create table if not exists public.contacts (
   audience_type         text not null default '',
   owner                 text not null default '',
   tags                  text[] not null default '{}',
+  event_id              uuid,  -- "Met at" — references events(id)
   notes                 text not null default '',
   last_contacted_date   date,
   next_follow_up_date   date,
@@ -93,6 +94,28 @@ create index if not exists deals_updated_at_idx on public.deals(updated_at desc)
 create index if not exists deals_stage_idx on public.deals(stage);
 create index if not exists deal_activities_deal_id_idx on public.deal_activities(deal_id);
 
+-- ---------- events (kalapus, circles, mixers, pop-ups) ----------
+create table if not exists public.events (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null default '',
+  type        text not null default 'Kalapu',
+  status      text not null default 'Idea',
+  date        date,
+  city        text not null default '',
+  state       text not null default '',
+  venue       text not null default '',
+  host        text not null default '',
+  goal        text not null default '',
+  cost        numeric,
+  url         text not null default '',
+  notes       text not null default '',
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists events_date_idx on public.events(date);
+create index if not exists contacts_event_id_idx on public.contacts(event_id);
+
 -- ============================================================
 -- Row Level Security
 -- ------------------------------------------------------------
@@ -111,6 +134,7 @@ alter table public.contacts        enable row level security;
 alter table public.interactions    enable row level security;
 alter table public.deals           enable row level security;
 alter table public.deal_activities enable row level security;
+alter table public.events          enable row level security;
 
 drop policy if exists "anon full access contacts"      on public.contacts;
 drop policy if exists "anon full access interactions"  on public.interactions;
@@ -133,6 +157,11 @@ create policy "authed full access deals"
 
 create policy "authed full access deal_activities"
   on public.deal_activities for all to authenticated
+  using (true) with check (true);
+
+drop policy if exists "authed full access events" on public.events;
+create policy "authed full access events"
+  on public.events for all to authenticated
   using (true) with check (true);
 
 -- ============================================================
@@ -166,6 +195,14 @@ values
   ('BrightReach Agency — creator bundle','BrightReach Agency','Partnership','Proposal',9000,current_date+14,'Taylor','Referral','Follow up on proposal',current_date+1,'Seeding + wholesale combo across their roster.'),
   ('Devin Carter — ambassador renewal','Devin Carter','Ambassador','Negotiation',1500,current_date+7,'Taylor','Existing ambassador','Agree on monthly content + commission',current_date+3,'Renewing for another quarter, wants higher commission.'),
   ('Summit Gyms — sponsorship','Summit Gyms','Sponsorship','Won',6000,current_date-5,'Taylor','Event contact','Deliver first shipment',current_date+4,'Closed — 3-location gym chain, branded cooler placement.');
+
+-- Sample events
+insert into public.events (name, type, status, date, city, state, venue, host, goal, cost, notes)
+values
+  ('SLC Kalapu Night','Kalapu','Going',current_date+6,'Salt Lake City','UT','Tongan community hall','Community group','Hand out 20 samples, sign 2 ambassadors',50,'Big local kava crowd — bring the cooler and discount cards.'),
+  ('Provo Wellness Mixer','Mixer','Reaching out',current_date+13,'Provo','UT','Startup co-working space','','Meet creators + gym owners',0,'Reaching out to the host about a sampling table.'),
+  ('Park City Farmers Market','Farmers market','Researching',current_date+20,'Park City','UT','','','Test retail interest',null,'Check booth fees and permit requirements.'),
+  ('Friday Kava Circle','Kava circle','Attended',current_date-4,'Ogden','UT','Backyard','','Casual hangout, share new flavor',null,'Great vibe — a few people want bottles. Follow up this week.');
 
 -- ============================================================
 -- OPTIONAL: strict per-user isolation (each account sees only its own data).

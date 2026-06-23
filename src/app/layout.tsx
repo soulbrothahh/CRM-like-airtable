@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { AuthGate } from "@/components/AuthGate";
 import { DataProvider } from "@/components/DataProvider";
 import { DealsProvider } from "@/components/DealsProvider";
+import { EventsProvider } from "@/components/EventsProvider";
 import { BottomNav, Sidebar } from "@/components/Nav";
 import { QuickAdd } from "@/components/QuickAdd";
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -38,14 +39,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthGate>
             <DataProvider>
               <DealsProvider>
-                <div className="flex min-h-screen">
-                  <Sidebar />
-                  <main className="w-full min-w-0 flex-1 overflow-x-hidden pb-24 md:pb-8">
-                  {children}
-                </main>
-                </div>
-                <QuickAdd />
-                <BottomNav />
+                <EventsProvider>
+                  <div className="flex min-h-screen">
+                    <Sidebar />
+                    <main className="w-full min-w-0 flex-1 overflow-x-hidden pb-24 md:pb-8">
+                      {children}
+                    </main>
+                  </div>
+                  <QuickAdd />
+                  <BottomNav />
+                </EventsProvider>
               </DealsProvider>
             </DataProvider>
           </AuthGate>

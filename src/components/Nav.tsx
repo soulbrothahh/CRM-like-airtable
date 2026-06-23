@@ -8,6 +8,7 @@ import { useAuth } from "./AuthProvider";
 const LINKS = [
   { href: "/", label: "Better Moments", icon: "🏝️", short: "Home" },
   { href: "/contacts", label: "Connections", icon: "👋", short: "People" },
+  { href: "/events", label: "Events", icon: "🌺", short: "Events" },
   { href: "/deals", label: "Deals", icon: "🤝", short: "Deals" },
   { href: "/bottles", label: "Kava Giveaways", icon: "🌿", short: "Kava" },
   { href: "/outreach", label: "Warm Intros", icon: "✉️", short: "Intros" },
