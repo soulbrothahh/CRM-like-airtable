@@ -1,4 +1,5 @@
-import type { Contact, Interaction } from "./types";
+import type { Activity, Contact, Interaction } from "./types";
+import { computeScore } from "./scoring";
 
 function daysFromNow(n: number): string {
   const d = new Date();
@@ -6,10 +7,17 @@ function daysFromNow(n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+function tsFromNow(n: number): string {
+  return new Date(Date.now() + n * 86_400_000).toISOString();
+}
+
 const now = new Date().toISOString();
 
 // 10 sample NuKava contacts so the app feels alive on first run.
-export const SEED_CONTACTS: Contact[] = [
+const RAW_CONTACTS: Omit<
+  Contact,
+  "visitor_id" | "lead_score" | "lead_score_updated_at"
+>[] = [
   {
     id: "c1",
     name: "Maya Reyes",
@@ -431,6 +439,39 @@ export const SEED_CONTACTS: Contact[] = [
     updated_at: now,
   },
 ];
+
+// Sample web/email/social signals so the engagement score & timelines have
+// something to show on first run (demo / on-device mode).
+export const SEED_ACTIVITIES: Activity[] = [
+  // Maya — hot: requested info, opened + clicked emails, browsed pricing.
+  { id: "a1", contact_id: "c1", visitor_id: "demo-maya", source: "form", type: "form_submit", title: "Requested wholesale info", url: "https://nukava.com/contact", metadata: {}, occurred_at: tsFromNow(-8), created_at: now },
+  { id: "a2", contact_id: "c1", visitor_id: "demo-maya", source: "email", type: "email_open", title: "Opened ‘Welcome to NuKava’", url: "", metadata: {}, occurred_at: tsFromNow(-6), created_at: now },
+  { id: "a3", contact_id: "c1", visitor_id: "demo-maya", source: "email", type: "email_click", title: "Clicked the sample-kit link", url: "https://nukava.com/samples", metadata: {}, occurred_at: tsFromNow(-3), created_at: now },
+  { id: "a4", contact_id: "c1", visitor_id: "demo-maya", source: "email", type: "email_open", title: "Opened ‘Your sample kit’", url: "", metadata: {}, occurred_at: tsFromNow(-3), created_at: now },
+  { id: "a5", contact_id: "c1", visitor_id: "demo-maya", source: "web", type: "page_view", title: "Viewed Pricing", url: "https://nukava.com/pricing", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  { id: "a6", contact_id: "c1", visitor_id: "demo-maya", source: "web", type: "session", title: "Visited the site", url: "https://nukava.com", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  // Jordan — warming up: browsing + email opens.
+  { id: "a7", contact_id: "c4", visitor_id: "demo-jordan", source: "web", type: "session", title: "Visited the site", url: "https://nukava.com", metadata: {}, occurred_at: tsFromNow(-5), created_at: now },
+  { id: "a8", contact_id: "c4", visitor_id: "demo-jordan", source: "web", type: "page_view", title: "Viewed Shop", url: "https://nukava.com/shop", metadata: {}, occurred_at: tsFromNow(-5), created_at: now },
+  { id: "a9", contact_id: "c4", visitor_id: "demo-jordan", source: "email", type: "email_open", title: "Opened ‘Meet NuKava’", url: "", metadata: {}, occurred_at: tsFromNow(-4), created_at: now },
+  { id: "a10", contact_id: "c4", visitor_id: "demo-jordan", source: "email", type: "email_open", title: "Opened ‘Creator program’", url: "", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  { id: "a11", contact_id: "c4", visitor_id: "demo-jordan", source: "email", type: "email_click", title: "Clicked ‘Apply now’", url: "https://nukava.com/creators", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  // Priya — replied and engaged on social.
+  { id: "a12", contact_id: "c5", visitor_id: "demo-priya", source: "email", type: "email_reply", title: "Replied about a partnership", url: "", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  { id: "a13", contact_id: "c5", visitor_id: "demo-priya", source: "email", type: "email_open", title: "Opened ‘Partnership ideas’", url: "", metadata: {}, occurred_at: tsFromNow(-4), created_at: now },
+  { id: "a14", contact_id: "c5", visitor_id: "demo-priya", source: "social", type: "social_mention", title: "Tagged NuKava in a story", url: "", metadata: {}, occurred_at: tsFromNow(-1), created_at: now },
+];
+
+// Final contacts: inject engagement fields, scoring each from its seeded signals.
+export const SEED_CONTACTS: Contact[] = RAW_CONTACTS.map((c) => {
+  const acts = SEED_ACTIVITIES.filter((a) => a.contact_id === c.id);
+  return {
+    ...c,
+    visitor_id: null,
+    lead_score: acts.length ? computeScore(acts).score : 0,
+    lead_score_updated_at: acts.length ? now : null,
+  };
+});
 
 export const SEED_INTERACTIONS: Interaction[] = [
   {

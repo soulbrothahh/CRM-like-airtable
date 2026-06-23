@@ -6,9 +6,11 @@ import {
   OUTREACH_STATUS_COLORS,
   PRIORITY_COLORS,
   RELATIONSHIP_COLORS,
+  SCORE_BAND_COLORS,
   STAGE_COLORS,
   STATUS_COLORS,
 } from "@/lib/constants";
+import { scoreBand } from "@/lib/scoring";
 import type {
   BottlePriority,
   BottleStatus,
@@ -55,4 +57,16 @@ export function EventTypeBadge({ type }: { type: EventType }) {
 
 export function OutreachStatusBadge({ status }: { status: OutreachStatus }) {
   return <span className={`badge ${OUTREACH_STATUS_COLORS[status]}`}>{status}</span>;
+}
+
+// Signal-driven engagement score → "🔥 Hot 62", "Warm 28", "Cold 5"
+export function ScoreBadge({ score }: { score: number }) {
+  const band = scoreBand(score);
+  const flame = band === "Hot" ? "🔥 " : "";
+  return (
+    <span className={`badge ${SCORE_BAND_COLORS[band]}`}>
+      {flame}
+      {band} {score}
+    </span>
+  );
 }

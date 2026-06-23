@@ -10,11 +10,13 @@ import { Modal } from "@/components/Modal";
 import { QuickActions } from "@/components/QuickActions";
 import { Select } from "@/components/ContactForm";
 import { SequenceCard } from "@/components/SequenceCard";
+import { ActivityTimeline, SignalsCard } from "@/components/ActivityFeed";
 import {
   BottleStatusBadge,
   OutreachStatusBadge,
   PriorityBadge,
   RelationshipBadge,
+  ScoreBadge,
   StatusBadge,
 } from "@/components/Badge";
 import { INTERACTION_TYPES } from "@/lib/constants";
@@ -24,6 +26,8 @@ import {
   getContact,
   listInteractions,
 } from "@/lib/data";
+import { listActivities } from "@/lib/activities";
+import { computeScore } from "@/lib/scoring";
 import {
   formatDate,
   initials,
@@ -32,7 +36,13 @@ import {
   tiktokUrl,
   todayISO,
 } from "@/lib/helpers";
-import type { Contact, Interaction, InteractionType, NewContact } from "@/lib/types";
+import type {
+  Activity,
+  Contact,
+  Interaction,
+  InteractionType,
+  NewContact,
+} from "@/lib/types";
 
 export default function ContactDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,14 +51,20 @@ export default function ContactDetail() {
   const { events } = useEvents();
   const [contact, setContact] = useState<Contact | null>(null);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
 
   async function load() {
     setLoading(true);
-    const [c, ix] = await Promise.all([getContact(id), listInteractions(id)]);
+    const [c, ix, act] = await Promise.all([
+      getContact(id),
+      listInteractions(id),
+      listActivities(id),
+    ]);
     setContact(c);
     setInteractions(ix);
+    setActivities(act);
     setLoading(false);
   }
 
@@ -113,6 +129,9 @@ export default function ContactDetail() {
               {c.follower_count ? ` · ${c.follower_count.toLocaleString()} followers` : ""}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
+              {activities.length > 0 && (
+                <ScoreBadge score={computeScore(activities).score} />
+              )}
               <StatusBadge status={c.status} />
               <OutreachStatusBadge status={c.outreach_status} />
               <RelationshipBadge value={c.relationship_strength} />
@@ -141,6 +160,7 @@ export default function ContactDetail() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Left: info */}
         <div className="space-y-4 lg:col-span-1">
+          <SignalsCard activities={activities} />
           <SequenceCard contact={c} onChange={load} />
           <InfoCard title="Contact info">
             <Info label="Phone" value={c.phone} />
@@ -216,6 +236,8 @@ export default function ContactDetail() {
             interactions={interactions}
             onChange={load}
           />
+
+          <ActivityTimeline activities={activities} />
         </div>
       </div>
 

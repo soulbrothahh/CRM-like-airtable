@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/deals", label: "Deals", icon: "🤝", short: "Deals" },
   { href: "/bottles", label: "Kava Giveaways", icon: "🌿", short: "Kava" },
   { href: "/outreach", label: "Warm Intros", icon: "✉️", short: "Intros" },
+  { href: "/tracking", label: "Website Tracking", icon: "📈", short: "Track" },
   { href: "/data", label: "Import / Export", icon: "⇄", short: "Data" },
 ];
 

@@ -43,6 +43,9 @@ create table if not exists public.contacts (
   ambassador_signup     boolean not null default false,
   discount_code         text not null default '',
   sales_generated       numeric,
+  visitor_id            text,  -- stitched anonymous device id (web analytics)
+  lead_score            integer not null default 0,
+  lead_score_updated_at timestamptz,
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now()
 );
@@ -134,6 +137,25 @@ create table if not exists public.sequences (
 
 create index if not exists contacts_sequence_id_idx on public.contacts(sequence_id);
 
+-- ---------- activities (unified signal timeline: web, email, social) ----------
+create table if not exists public.activities (
+  id          uuid primary key default gen_random_uuid(),
+  contact_id  uuid references public.contacts(id) on delete cascade, -- null = anonymous
+  visitor_id  text,           -- device id, used to stitch on form fill
+  source      text not null default 'web',
+  type        text not null default 'page_view',
+  title       text not null default '',
+  url         text not null default '',
+  metadata    jsonb not null default '{}',
+  occurred_at timestamptz not null default now(),
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists activities_contact_id_idx on public.activities(contact_id);
+create index if not exists activities_visitor_id_idx on public.activities(visitor_id);
+create index if not exists activities_occurred_at_idx on public.activities(occurred_at desc);
+create index if not exists contacts_lead_score_idx on public.contacts(lead_score desc);
+
 -- ============================================================
 -- Row Level Security
 -- ------------------------------------------------------------
@@ -154,6 +176,7 @@ alter table public.deals           enable row level security;
 alter table public.deal_activities enable row level security;
 alter table public.events          enable row level security;
 alter table public.sequences       enable row level security;
+alter table public.activities      enable row level security;
 
 drop policy if exists "anon full access contacts"      on public.contacts;
 drop policy if exists "anon full access interactions"  on public.interactions;
@@ -186,6 +209,13 @@ create policy "authed full access events"
 drop policy if exists "authed full access sequences" on public.sequences;
 create policy "authed full access sequences"
   on public.sequences for all to authenticated
+  using (true) with check (true);
+
+-- The public tracking endpoint writes via the service-role key, which bypasses
+-- RLS. Signed-in users can read/manage activity in the app.
+drop policy if exists "authed full access activities" on public.activities;
+create policy "authed full access activities"
+  on public.activities for all to authenticated
   using (true) with check (true);
 
 -- ============================================================
