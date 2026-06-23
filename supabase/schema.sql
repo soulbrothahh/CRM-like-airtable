@@ -1,0 +1,114 @@
+-- ============================================================
+-- NuKava CRM — Supabase schema
+-- Paste this whole file into the Supabase SQL Editor and click "Run".
+-- ============================================================
+
+-- ---------- contacts ----------
+create table if not exists public.contacts (
+  id                    uuid primary key default gen_random_uuid(),
+  name                  text not null default '',
+  phone                 text not null default '',
+  email                 text not null default '',
+  instagram             text not null default '',
+  tiktok                text not null default '',
+  city                  text not null default '',
+  state                 text not null default '',
+  contact_type          text not null default 'Creator',
+  relationship_strength text not null default 'Cold',
+  lead_temperature      text not null default 'Cold',
+  status                text not null default 'New Lead',
+  source                text not null default '',
+  follower_count        integer,
+  audience_type         text not null default '',
+  owner                 text not null default '',
+  notes                 text not null default '',
+  last_contacted_date   date,
+  next_follow_up_date   date,
+  bottle_recipient      boolean not null default false,
+  bottle_priority       text not null default 'Medium',
+  bottle_status         text not null default 'Not planned',
+  bottle_quantity       integer,
+  shipping_name         text not null default '',
+  shipping_address      text not null default '',
+  tracking_number       text not null default '',
+  date_sent             date,
+  date_delivered        date,
+  posted_content        boolean not null default false,
+  ambassador_signup     boolean not null default false,
+  discount_code         text not null default '',
+  sales_generated       numeric,
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now()
+);
+
+-- ---------- interactions ----------
+create table if not exists public.interactions (
+  id          uuid primary key default gen_random_uuid(),
+  contact_id  uuid not null references public.contacts(id) on delete cascade,
+  date        date not null default current_date,
+  type        text not null default 'Texted',
+  notes       text not null default '',
+  next_action text not null default '',
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists interactions_contact_id_idx on public.interactions(contact_id);
+create index if not exists contacts_updated_at_idx on public.contacts(updated_at desc);
+create index if not exists contacts_status_idx on public.contacts(status);
+create index if not exists contacts_bottle_status_idx on public.contacts(bottle_status);
+
+-- ============================================================
+-- Row Level Security
+-- ------------------------------------------------------------
+-- V1 (simplest): single-user personal CRM. The policies below allow the
+-- public/anon API key full access. This is fine for personal use where you
+-- control the project, but anyone with your URL + anon key could read/write.
+--
+-- To lock it down later, enable Supabase Auth and replace the policies with
+-- ones scoped to auth.uid() (see the commented block at the bottom).
+-- ============================================================
+alter table public.contacts     enable row level security;
+alter table public.interactions enable row level security;
+
+drop policy if exists "anon full access contacts"     on public.contacts;
+drop policy if exists "anon full access interactions" on public.interactions;
+
+create policy "anon full access contacts"
+  on public.contacts for all
+  using (true) with check (true);
+
+create policy "anon full access interactions"
+  on public.interactions for all
+  using (true) with check (true);
+
+-- ============================================================
+-- Seed data (10 sample NuKava contacts). Safe to delete this section.
+-- ============================================================
+insert into public.contacts
+  (name, instagram, tiktok, phone, email, city, state, contact_type,
+   relationship_strength, lead_temperature, status, source, follower_count,
+   audience_type, owner, notes, last_contacted_date, next_follow_up_date,
+   bottle_recipient, bottle_priority, bottle_status, bottle_quantity,
+   shipping_name, shipping_address, tracking_number, date_sent, date_delivered,
+   posted_content, ambassador_signup, discount_code, sales_generated)
+values
+  ('Maya Reyes','@maya.wellness','@mayawellness','801-555-0142','maya@mayawellness.co','Salt Lake City','UT','Creator','Warm','Hot','Approved for Bottles','DM on Instagram',84000,'Wellness / fitness','Taylor','Loves adaptogens. Wants a morning routine reel.',current_date-3,current_date-1,true,'VIP','Ready to send',2,'Maya Reyes','245 E 300 S, Salt Lake City, UT 84111','',null,null,false,false,'MAYA15',0),
+  ('Devin Carter','@devinlifts','@devinlifts','385-555-0199','devin.carter@gmail.com','Provo','UT','Ambassador','Hot','Hot','Ambassador Signed Up','Gym event',22000,'Strength training','Taylor','Signed ambassador agreement. Posts consistently.',current_date-7,current_date+5,true,'High','Delivered',3,'Devin Carter','88 N University Ave, Provo, UT 84601','1Z999AA10123456784',current_date-14,current_date-11,true,true,'DEVIN10',640),
+  ('Sofia Lin','@brightreach','','','sofia@brightreach.agency','Los Angeles','CA','Agency','Warm','Warm','Interested','Referral from Devin',null,'Creator agency (30+ creators)','Taylor','Reps wellness creators. Wants wholesale + seeding.',current_date-2,current_date+2,true,'High','Need address',6,'','','',null,null,false,false,'',0),
+  ('Jordan Webb','@jordaneats','@jordaneats','801-555-0177','jordan@webb.com','Lehi','UT','Creator','Cold','Warm','Contacted','Found on TikTok',156000,'Food / lifestyle','Taylor','Big TikTok reach. Asked for more info.',current_date-1,current_date+1,true,'Medium','Want to send',1,'','','',null,null,false,false,'',0),
+  ('Priya Nair','@calm.priya','@calmpriya','212-555-0143','priya@calmcollective.co','New York','NY','Creator','Warm','Hot','Posted Content','Event — Wellness Expo',47000,'Mindfulness / mental health','Taylor','Posted unboxing story that converted well.',current_date-9,current_date-2,true,'High','Followed up',2,'Priya Nair','120 W 21st St, New York, NY 10011','9400111899560000000000',current_date-20,current_date-16,true,false,'PRIYA15',310),
+  ('Coastal Health Market','@coastalhealthmkt','','619-555-0188','buyer@coastalhealth.com','San Diego','CA','Retailer','Cold','Warm','New Lead','Cold outreach',null,'Local health food retail','Taylor','Independent market. Open to wholesale samples.',null,current_date,true,'Medium','Want to send',4,'Coastal Health Market','1500 Garnet Ave, San Diego, CA 92109','',null,null,false,false,'',0),
+  ('Alex Tanaka','@alexoutdoors','@alexoutdoors','801-555-0121','alex.tanaka@gmail.com','Park City','UT','Friend','Close Friend','Hot','Bottle Sent','Personal friend',9000,'Outdoor / adventure','Taylor','Friend who loves the product. Will refer others.',current_date-5,current_date+3,true,'Medium','Sent',2,'Alex Tanaka','55 Main St, Park City, UT 84060','1Z999AA10123456111',current_date-2,null,false,false,'ALEX10',120),
+  ('Bianca Ortiz','@miamiglow','@miamiglow','305-555-0166','bianca@miamiglow.co','Miami','FL','Creator','Warm','Warm','Needs Follow-Up','Instagram comment',63000,'Beauty / wellness','Taylor','Interested but went quiet. Needs a nudge.',current_date-12,current_date-4,true,'Medium','Need address',1,'','','',null,null,false,false,'',0),
+  ('Greenleaf Distributors','','','503-555-0150','orders@greenleafdist.com','Portland','OR','Wholesale','Cold','Cold','New Lead','Trade show',null,'Regional distributor','Taylor','Distributes to 40+ PNW stores. Wants pricing.',null,current_date+4,false,'Low','Not planned',null,'','','',null,null,false,false,'',0),
+  ('Tyler Brooks','@tylerbrooksfit','@tylerbrooksfit','801-555-0133','tyler.brooks@gmail.com','Ogden','UT','Event Contact','Warm','Warm','Interested','Met at NuKava pop-up',14000,'Fitness / supplements','Taylor','Grabbed a sample at the booth, loved it.',current_date-1,current_date+2,true,'Medium','Ready to send',1,'Tyler Brooks','390 Washington Blvd, Ogden, UT 84401','',null,null,false,false,'',0);
+
+-- ============================================================
+-- OPTIONAL: lock down to a logged-in user (run after enabling Auth).
+-- ------------------------------------------------------------
+-- drop policy if exists "anon full access contacts" on public.contacts;
+-- drop policy if exists "anon full access interactions" on public.interactions;
+-- create policy "authed contacts" on public.contacts for all
+--   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- create policy "authed interactions" on public.interactions for all
+--   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
