@@ -63,6 +63,7 @@ export interface Contact {
   follower_count: number | null;
   audience_type: string;
   owner: string;
+  tags: string[];
   notes: string;
   last_contacted_date: string | null; // YYYY-MM-DD
   next_follow_up_date: string | null; // YYYY-MM-DD

@@ -46,6 +46,19 @@ export function ContactCard({ contact }: { contact: Contact }) {
         </div>
       )}
 
+      {c.tags && c.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {c.tags.map((t) => (
+            <span
+              key={t}
+              className="rounded-full bg-clay-500/10 px-2 py-0.5 text-[11px] font-medium text-clay-600"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+
       {c.notes && (
         <p className="line-clamp-2 text-xs text-taupe-500">{c.notes}</p>
       )}

@@ -5,6 +5,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { DataProvider } from "@/components/DataProvider";
 import { DealsProvider } from "@/components/DealsProvider";
 import { BottomNav, Sidebar } from "@/components/Nav";
+import { QuickAdd } from "@/components/QuickAdd";
 import { ServiceWorker } from "@/components/ServiceWorker";
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   {children}
                 </main>
                 </div>
+                <QuickAdd />
                 <BottomNav />
               </DealsProvider>
             </DataProvider>

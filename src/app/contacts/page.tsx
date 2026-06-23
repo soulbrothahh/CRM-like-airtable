@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useData } from "@/components/DataProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { ContactTable } from "@/components/ContactTable";
@@ -9,13 +10,14 @@ import { ContactForm } from "@/components/ContactForm";
 import { Modal } from "@/components/Modal";
 import { VIEWS, searchContact } from "@/lib/views";
 import { CONTACT_TYPES, STATUSES, BOTTLE_PRIORITIES } from "@/lib/constants";
-import type { NewContact } from "@/lib/types";
+import { initials } from "@/lib/helpers";
+import type { Contact, NewContact } from "@/lib/types";
 
 export default function ContactsPage() {
   const { contacts, loading, create } = useData();
   const [view, setView] = useState("all");
   const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<"table" | "card">("card");
+  const [mode, setMode] = useState<"table" | "card" | "cities">("card");
   const [adding, setAdding] = useState(false);
 
   // filter chips
@@ -23,8 +25,15 @@ export default function ContactsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [priorityFilter, setPriorityFilter] = useState<string>("");
   const [sentFilter, setSentFilter] = useState<string>(""); // "yes" | "no" | ""
+  const [tagFilter, setTagFilter] = useState<string>("");
 
   const activeView = VIEWS.find((v) => v.id === view) ?? VIEWS[0];
+
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    contacts.forEach((c) => c.tags?.forEach((t) => set.add(t)));
+    return Array.from(set).sort();
+  }, [contacts]);
 
   const filtered = useMemo(() => {
     return contacts.filter((c) => {
@@ -33,20 +42,21 @@ export default function ContactsPage() {
       if (typeFilter && c.contact_type !== typeFilter) return false;
       if (statusFilter && c.status !== statusFilter) return false;
       if (priorityFilter && c.bottle_priority !== priorityFilter) return false;
+      if (tagFilter && !(c.tags ?? []).includes(tagFilter)) return false;
       if (sentFilter === "yes" && !["Sent", "Delivered", "Followed up"].includes(c.bottle_status))
         return false;
       if (sentFilter === "no" && ["Sent", "Delivered", "Followed up"].includes(c.bottle_status))
         return false;
       return true;
     });
-  }, [contacts, activeView, query, typeFilter, statusFilter, priorityFilter, sentFilter]);
+  }, [contacts, activeView, query, typeFilter, statusFilter, priorityFilter, tagFilter, sentFilter]);
 
   async function handleCreate(values: NewContact) {
     await create(values);
     setAdding(false);
   }
 
-  const anyFilter = typeFilter || statusFilter || priorityFilter || sentFilter;
+  const anyFilter = typeFilter || statusFilter || priorityFilter || sentFilter || tagFilter;
 
   return (
     <div>
@@ -92,6 +102,9 @@ export default function ContactsPage() {
           <FilterSelect value={statusFilter} onChange={setStatusFilter} placeholder="All statuses" options={STATUSES} />
           <FilterSelect value={priorityFilter} onChange={setPriorityFilter} placeholder="Any priority" options={BOTTLE_PRIORITIES} />
           <FilterSelect value={sentFilter} onChange={setSentFilter} placeholder="Sent?" options={["yes", "no"]} labels={{ yes: "Bottle sent", no: "Not sent" }} />
+          {allTags.length > 0 && (
+            <FilterSelect value={tagFilter} onChange={setTagFilter} placeholder="Any tag" options={allTags} />
+          )}
           {anyFilter && (
             <button
               onClick={() => {
@@ -99,6 +112,7 @@ export default function ContactsPage() {
                 setStatusFilter("");
                 setPriorityFilter("");
                 setSentFilter("");
+                setTagFilter("");
               }}
               className="btn-subtle text-xs"
             >
@@ -122,6 +136,14 @@ export default function ContactsPage() {
             >
               Table
             </button>
+            <button
+              onClick={() => setMode("cities")}
+              className={`rounded-lg px-3 py-1 text-xs font-medium ${
+                mode === "cities" ? "bg-gold-400 text-night-900" : "text-taupe-600"
+              }`}
+            >
+              Cities
+            </button>
           </div>
         </div>
 
@@ -130,6 +152,8 @@ export default function ContactsPage() {
           <div className="py-20 text-center text-taupe-400">Loading…</div>
         ) : mode === "table" ? (
           <ContactTable contacts={filtered} />
+        ) : mode === "cities" ? (
+          <CitiesView contacts={filtered} />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((c) => (
@@ -147,6 +171,54 @@ export default function ContactsPage() {
       <Modal open={adding} onClose={() => setAdding(false)} title="Add contact" wide>
         <ContactForm onSubmit={handleCreate} onCancel={() => setAdding(false)} />
       </Modal>
+    </div>
+  );
+}
+
+function CitiesView({ contacts }: { contacts: Contact[] }) {
+  const groups = useMemo(() => {
+    const map = new Map<string, Contact[]>();
+    for (const c of contacts) {
+      const key = [c.city.trim(), c.state.trim()].filter(Boolean).join(", ") || "No city";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(c);
+    }
+    return Array.from(map.entries()).sort((a, b) => b[1].length - a[1].length);
+  }, [contacts]);
+
+  if (contacts.length === 0) {
+    return (
+      <div className="py-20 text-center text-taupe-400">No contacts match this view.</div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {groups.map(([city, people]) => (
+        <div key={city} className="card p-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h3 className="font-semibold">📍 {city}</h3>
+            <span className="text-xs text-taupe-400">
+              {people.length} {people.length === 1 ? "person" : "people"}
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            {people.map((c) => (
+              <Link
+                key={c.id}
+                href={`/contacts/${c.id}`}
+                className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 hover:bg-night-900/[0.04]"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-gold-300/80 to-gold-600 text-[11px] font-bold text-night-900">
+                  {initials(c.name)}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">{c.name}</span>
+                <span className="shrink-0 text-xs text-taupe-400">{c.contact_type}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

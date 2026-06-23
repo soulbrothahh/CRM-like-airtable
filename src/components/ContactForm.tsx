@@ -189,6 +189,22 @@ export function ContactForm({
         <Field label="Sales generated ($)">
           <input className="input" inputMode="numeric" value={v.sales_generated ?? ""} onChange={(e) => set("sales_generated", numberOrNull(e.target.value))} />
         </Field>
+        <Field label="Tags (comma separated)" className="sm:col-span-2">
+          <input
+            className="input"
+            value={(v.tags ?? []).join(", ")}
+            onChange={(e) =>
+              set(
+                "tags",
+                e.target.value
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+              )
+            }
+            placeholder="e.g. Utah, gym owner, VIP"
+          />
+        </Field>
         <Field label="Notes" className="sm:col-span-2">
           <textarea className="input min-h-[80px]" value={v.notes} onChange={(e) => set("notes", e.target.value)} />
         </Field>
