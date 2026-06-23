@@ -4,9 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useData } from "@/components/DataProvider";
 import { useDeals } from "@/components/DealsProvider";
+import { useSequences } from "@/components/SequencesProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { OutreachStatusBadge } from "@/components/Badge";
+import { SequencesManager } from "@/components/SequencesManager";
 import { createInteraction } from "@/lib/data";
+import {
+  advanceSequence,
+  currentStep,
+  findSequence,
+  isStepDue,
+} from "@/lib/sequenceEngine";
 import { formatDate, initials, isOverdue, todayISO } from "@/lib/helpers";
 import {
   OUTREACH_TEMPLATES,
@@ -31,7 +39,7 @@ function daysSince(dateStr: string | null): number | null {
 export default function OutreachPage() {
   const { contacts, update } = useData();
   const { deals } = useDeals();
-  const [tab, setTab] = useState<"compose" | "pipeline">("compose");
+  const [tab, setTab] = useState<"compose" | "pipeline" | "sequences">("compose");
 
   return (
     <div>
@@ -56,14 +64,24 @@ export default function OutreachPage() {
             >
               Pipeline
             </button>
+            <button
+              onClick={() => setTab("sequences")}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ${
+                tab === "sequences" ? "bg-night-900 text-cream-100" : "text-taupe-600"
+              }`}
+            >
+              Sequences
+            </button>
           </div>
         }
       />
 
       {tab === "compose" ? (
         <Compose contacts={contacts} deals={deals} update={update} />
-      ) : (
+      ) : tab === "pipeline" ? (
         <Pipeline contacts={contacts} update={update} />
+      ) : (
+        <SequencesManager />
       )}
     </div>
   );
@@ -372,6 +390,18 @@ function Pipeline({
   contacts: Contact[];
   update: ReturnType<typeof useData>["update"];
 }) {
+  const { sequences } = useSequences();
+
+  const stepsDue = useMemo(() => {
+    return contacts
+      .map((c) => {
+        const seq = findSequence(c, sequences);
+        if (!seq || !isStepDue(c, seq)) return null;
+        return { contact: c, seq };
+      })
+      .filter((x): x is { contact: Contact; seq: (typeof sequences)[number] } => x !== null);
+  }, [contacts, sequences]);
+
   const stats = useMemo(() => {
     const today = todayISO();
     const week = plusDays(-7);
@@ -423,6 +453,49 @@ function Pipeline({
         <Stat label="Reply rate" value={`${stats.replyRate}%`} />
         <Stat label="Follow-ups due" value={stats.followUps} warn={stats.followUps > 0} />
       </div>
+
+      {stepsDue.length > 0 && (
+        <section>
+          <div className="mb-2 flex items-baseline justify-between">
+            <h2 className="text-base font-semibold">📋 Sequence steps due</h2>
+            <span className="text-xs text-taupe-400">From your cadences</span>
+          </div>
+          <div className="card divide-y divide-night-900/10">
+            {stepsDue.map(({ contact: c, seq }) => {
+              const step = currentStep(c, seq);
+              return (
+                <div key={c.id} className="p-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold-300/80 to-gold-600 text-xs font-bold text-night-900">
+                      {initials(c.name)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/contacts/${c.id}`}
+                        className="block truncate font-semibold hover:text-gold-600"
+                      >
+                        {c.name}
+                      </Link>
+                      <div className="truncate text-xs text-taupe-400">
+                        {seq.name}
+                        {step ? ` · Day ${step.day} ${step.channel}: ${step.label}` : ""}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 pl-12">
+                    <button
+                      onClick={() => advanceSequence(update, c, seq)}
+                      className="btn-primary px-2.5 py-1 text-xs"
+                    >
+                      ✓ Log step &amp; next
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <PipeList
         title="🔔 Follow-ups due"

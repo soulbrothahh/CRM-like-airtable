@@ -254,3 +254,10 @@ export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, string> = {
   "Following up": GOLD,
   Closed: NEUTRAL,
 };
+
+export const SEQUENCE_CHANNELS: import("./types").SequenceChannel[] = [
+  "DM",
+  "Email",
+  "Text",
+  "Call",
+];

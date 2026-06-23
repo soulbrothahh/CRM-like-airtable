@@ -20,6 +20,9 @@ export function blankContact(): NewContact {
     tags: [],
     event_id: null,
     outreach_status: "Not contacted",
+    sequence_id: null,
+    sequence_step: 0,
+    sequence_started: null,
     notes: "",
     last_contacted_date: null,
     next_follow_up_date: null,
@@ -43,6 +46,12 @@ export function blankContact(): NewContact {
 
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+export function addDays(dateStr: string, n: number): string {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
 }
 
 export function isOverdue(dateStr: string | null): boolean {
