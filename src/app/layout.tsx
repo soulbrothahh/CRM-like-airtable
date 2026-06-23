@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/components/AuthProvider";
+import { AuthGate } from "@/components/AuthGate";
 import { DataProvider } from "@/components/DataProvider";
 import { BottomNav, Sidebar } from "@/components/Nav";
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -30,14 +32,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <DataProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 pb-24 md:pb-8">{children}</main>
-          </div>
-          <BottomNav />
+        <AuthProvider>
+          <AuthGate>
+            <DataProvider>
+              <div className="flex min-h-screen">
+                <Sidebar />
+                <main className="flex-1 pb-24 md:pb-8">{children}</main>
+              </div>
+              <BottomNav />
+            </DataProvider>
+          </AuthGate>
           <ServiceWorker />
-        </DataProvider>
+        </AuthProvider>
       </body>
     </html>
   );

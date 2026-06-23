@@ -22,6 +22,7 @@ phone as an app (PWA), with **CSV import/export** and **JSON backups**.
 - **Quick actions everywhere** — ✅ Approve for bottles · 📦 Mark bottle sent · 🔔 Add follow-up · 📝 Add note.
 - **Status & priority color badges** throughout.
 - **Import / Export** — import creator-list CSVs (smart header matching), export CSV, and download full JSON backups.
+- **Private login** — when cloud sync is on, the app is protected behind an email/password account (on-device mode stays login-free).
 - **Installable PWA** — add it to your iPhone/Android home screen and it opens like a native app.
 
 ---
@@ -60,13 +61,17 @@ This is optional but recommended — it's free and gives you the same data on ev
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    ```
-5. Restart the app (`npm run dev`). The sidebar will now say **"Cloud sync on"** and
-   your data lives in Supabase.
+5. Restart the app (`npm run dev`). You'll now see a **login screen** — click
+   *Create one*, sign up with your email + a password, and you're in. The sidebar
+   will say **"Cloud sync on"** and your data lives in Supabase, private to your login.
+6. **Lock the door (one-time):** in Supabase go to **Authentication → Providers →
+   Email** and turn **off** "Allow new users to sign up" after you've created your
+   account. Now only you can log in.
 
-> **Security note:** V1 keeps things simple — the database is open to anyone holding
-> your URL + anon key. For a personal CRM that's usually fine, but `schema.sql`
-> includes a ready-to-use block (at the bottom) for locking it down with Supabase
-> Auth when you want logins.
+> **How security works:** cloud data is protected by Row Level Security — nobody can
+> read or write it without signing in. On-device mode has no login (the data never
+> leaves your browser). If you ever want each account to see only its own data,
+> `schema.sql` has a ready-to-paste "per-user isolation" block at the bottom.
 
 ---
 
@@ -140,6 +145,5 @@ Next.js 14 (App Router) · TypeScript · Tailwind CSS · Supabase · PWA (manife
 ## 💡 Ideas for later
 
 - Email/SMS reminders for due follow-ups
-- Supabase Auth logins + per-user data
 - Bulk actions and CSV column-mapping UI
 - Photo attachments and tags

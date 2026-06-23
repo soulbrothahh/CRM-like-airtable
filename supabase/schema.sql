@@ -60,25 +60,31 @@ create index if not exists contacts_bottle_status_idx on public.contacts(bottle_
 -- ============================================================
 -- Row Level Security
 -- ------------------------------------------------------------
--- V1 (simplest): single-user personal CRM. The policies below allow the
--- public/anon API key full access. This is fine for personal use where you
--- control the project, but anyone with your URL + anon key could read/write.
+-- The app uses Supabase Auth. These policies allow any LOGGED-IN (authenticated)
+-- user full access, and block the public/anon key. So your data is private:
+-- nobody can read it without signing in.
 --
--- To lock it down later, enable Supabase Auth and replace the policies with
--- ones scoped to auth.uid() (see the commented block at the bottom).
+-- IMPORTANT (one-time): so that only YOU can make an account, go to
+--   Supabase → Authentication → Providers → Email
+-- create your own account first (sign up once in the app or via the dashboard),
+-- then turn OFF "Allow new users to sign up". After that, no one else can register.
+--
+-- (Prefer strict per-user isolation? See the commented block at the bottom.)
 -- ============================================================
 alter table public.contacts     enable row level security;
 alter table public.interactions enable row level security;
 
-drop policy if exists "anon full access contacts"     on public.contacts;
-drop policy if exists "anon full access interactions" on public.interactions;
+drop policy if exists "anon full access contacts"      on public.contacts;
+drop policy if exists "anon full access interactions"  on public.interactions;
+drop policy if exists "authed full access contacts"     on public.contacts;
+drop policy if exists "authed full access interactions" on public.interactions;
 
-create policy "anon full access contacts"
-  on public.contacts for all
+create policy "authed full access contacts"
+  on public.contacts for all to authenticated
   using (true) with check (true);
 
-create policy "anon full access interactions"
-  on public.interactions for all
+create policy "authed full access interactions"
+  on public.interactions for all to authenticated
   using (true) with check (true);
 
 -- ============================================================
@@ -104,11 +110,15 @@ values
   ('Tyler Brooks','@tylerbrooksfit','@tylerbrooksfit','801-555-0133','tyler.brooks@gmail.com','Ogden','UT','Event Contact','Warm','Warm','Interested','Met at NuKava pop-up',14000,'Fitness / supplements','Taylor','Grabbed a sample at the booth, loved it.',current_date-1,current_date+2,true,'Medium','Ready to send',1,'Tyler Brooks','390 Washington Blvd, Ogden, UT 84401','',null,null,false,false,'',0);
 
 -- ============================================================
--- OPTIONAL: lock down to a logged-in user (run after enabling Auth).
+-- OPTIONAL: strict per-user isolation (each account sees only its own data).
+-- Useful if you ever share the project with a teammate. Run this block to
+-- replace the policies above:
 -- ------------------------------------------------------------
--- drop policy if exists "anon full access contacts" on public.contacts;
--- drop policy if exists "anon full access interactions" on public.interactions;
--- create policy "authed contacts" on public.contacts for all
---   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
--- create policy "authed interactions" on public.interactions for all
---   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- alter table public.contacts     add column if not exists user_id uuid default auth.uid();
+-- alter table public.interactions add column if not exists user_id uuid default auth.uid();
+-- drop policy if exists "authed full access contacts"     on public.contacts;
+-- drop policy if exists "authed full access interactions" on public.interactions;
+-- create policy "own contacts" on public.contacts for all to authenticated
+--   using (user_id = auth.uid()) with check (user_id = auth.uid());
+-- create policy "own interactions" on public.interactions for all to authenticated
+--   using (user_id = auth.uid()) with check (user_id = auth.uid());

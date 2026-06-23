@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useData } from "./DataProvider";
+import { useAuth } from "./AuthProvider";
 
 const LINKS = [
   { href: "/", label: "Dashboard", icon: "🏠" },
@@ -81,6 +82,7 @@ export function Brand() {
 }
 
 function StorageChip({ mode }: { mode: "cloud" | "local" }) {
+  const { email, signOut } = useAuth();
   return (
     <div className="rounded-xl bg-ink-850 px-3 py-2 text-[11px] ring-1 ring-white/5">
       <div className="flex items-center gap-2">
@@ -93,11 +95,25 @@ function StorageChip({ mode }: { mode: "cloud" | "local" }) {
           {mode === "cloud" ? "Cloud sync on" : "On-device mode"}
         </span>
       </div>
-      <p className="mt-1 text-slate-500">
-        {mode === "cloud"
-          ? "Synced across your devices."
-          : "Add Supabase keys to sync."}
-      </p>
+      {mode === "cloud" && email ? (
+        <>
+          <p className="mt-1 truncate text-slate-500" title={email}>
+            {email}
+          </p>
+          <button
+            onClick={signOut}
+            className="mt-1.5 text-slate-400 hover:text-kava-300"
+          >
+            Sign out
+          </button>
+        </>
+      ) : (
+        <p className="mt-1 text-slate-500">
+          {mode === "cloud"
+            ? "Synced across your devices."
+            : "Add Supabase keys to sync."}
+        </p>
+      )}
     </div>
   );
 }
