@@ -5,6 +5,8 @@ import type {
   DealActivityType,
   DealStage,
   DealType,
+  EventStatus,
+  EventType,
   InteractionType,
   LeadTemperature,
   RelationshipStrength,
@@ -187,5 +189,47 @@ export const DEAL_TYPE_COLORS: Record<DealType, string> = {
   Partnership: VIOLET,
   Ambassador: EMERALD,
   Sponsorship: FUCHSIA,
+  Other: NEUTRAL,
+};
+
+// ---------------- Events ----------------
+
+export const EVENT_TYPES: EventType[] = [
+  "Kalapu",
+  "Kava circle",
+  "Mixer",
+  "Pop-up",
+  "Farmers market",
+  "Community",
+  "Conference",
+  "Other",
+];
+
+export const EVENT_STATUSES: EventStatus[] = [
+  "Idea",
+  "Researching",
+  "Reaching out",
+  "Going",
+  "Attended",
+  "Passed",
+];
+
+export const EVENT_STATUS_COLORS: Record<EventStatus, string> = {
+  Idea: NEUTRAL,
+  Researching: SKY,
+  "Reaching out": INDIGO,
+  Going: GOLD,
+  Attended: SAGE,
+  Passed: ROSE,
+};
+
+export const EVENT_TYPE_COLORS: Record<EventType, string> = {
+  Kalapu: GOLD,
+  "Kava circle": SAGE,
+  Mixer: VIOLET,
+  "Pop-up": SKY,
+  "Farmers market": EMERALD,
+  Community: CLAY,
+  Conference: INDIGO,
   Other: NEUTRAL,
 };

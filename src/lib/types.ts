@@ -64,6 +64,7 @@ export interface Contact {
   audience_type: string;
   owner: string;
   tags: string[];
+  event_id: string | null; // "Met at" — links to a CrmEvent
   notes: string;
   last_contacted_date: string | null; // YYYY-MM-DD
   next_follow_up_date: string | null; // YYYY-MM-DD
@@ -162,3 +163,43 @@ export interface DealActivity {
 
 export type NewDeal = Omit<Deal, "id" | "created_at" | "updated_at">;
 export type NewDealActivity = Omit<DealActivity, "id" | "created_at">;
+
+// ---------------- Events (kalapus, circles, mixers, pop-ups) ----------------
+
+export type EventType =
+  | "Kalapu"
+  | "Kava circle"
+  | "Mixer"
+  | "Pop-up"
+  | "Farmers market"
+  | "Community"
+  | "Conference"
+  | "Other";
+
+export type EventStatus =
+  | "Idea"
+  | "Researching"
+  | "Reaching out"
+  | "Going"
+  | "Attended"
+  | "Passed";
+
+export interface CrmEvent {
+  id: string;
+  name: string;
+  type: EventType;
+  status: EventStatus;
+  date: string | null; // YYYY-MM-DD
+  city: string;
+  state: string;
+  venue: string;
+  host: string;
+  goal: string;
+  cost: number | null;
+  url: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type NewEvent = Omit<CrmEvent, "id" | "created_at" | "updated_at">;

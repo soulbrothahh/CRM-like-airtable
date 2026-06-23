@@ -3,12 +3,13 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useData } from "@/components/DataProvider";
+import { useEvents } from "@/components/EventsProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { ContactForm } from "@/components/ContactForm";
 import { Modal } from "@/components/Modal";
 import { QuickActions } from "@/components/QuickActions";
 import { BottleStatusBadge, StatusBadge } from "@/components/Badge";
-import { formatDate, isOverdue, isToday, initials } from "@/lib/helpers";
+import { formatDate, isOverdue, isToday, initials, todayISO } from "@/lib/helpers";
 import type { Contact, NewContact } from "@/lib/types";
 
 export default function Dashboard() {
@@ -92,6 +93,8 @@ export default function Dashboard() {
               <Stat label="Sales generated" value={`$${stats.sales.toLocaleString()}`} />
             </div>
 
+            <UpcomingEvents />
+
             {/* Today's follow-ups */}
             <Panel
               title="People to Follow Up With"
@@ -147,6 +150,56 @@ export default function Dashboard() {
         <ContactForm onSubmit={handleCreate} onCancel={() => setAdding(false)} />
       </Modal>
     </div>
+  );
+}
+
+function UpcomingEvents() {
+  const { events } = useEvents();
+  const today = todayISO();
+  const upcoming = events
+    .filter(
+      (e) =>
+        e.status !== "Passed" &&
+        e.status !== "Attended" &&
+        (e.date === null || e.date >= today)
+    )
+    .sort((a, b) => (a.date ?? "9999").localeCompare(b.date ?? "9999"))
+    .slice(0, 3);
+
+  if (upcoming.length === 0) return null;
+
+  return (
+    <section>
+      <div className="mb-2 flex items-baseline justify-between">
+        <h2 className="text-base font-semibold">🌺 Upcoming Events</h2>
+        <Link href="/events" className="text-xs font-medium text-gold-600 hover:underline">
+          See all
+        </Link>
+      </div>
+      <div className="card divide-y divide-night-900/10">
+        {upcoming.map((e) => (
+          <Link
+            key={e.id}
+            href={`/events/${e.id}`}
+            className="flex items-center gap-3 p-3 hover:bg-night-900/[0.03]"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-500/15 text-base">
+              🌺
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-semibold">{e.name}</div>
+              <div className="truncate text-xs text-taupe-400">
+                {e.type}
+                {e.city ? ` · ${e.city}` : ""}
+              </div>
+            </div>
+            <span className="shrink-0 text-xs text-taupe-500">
+              {e.date ? formatDate(e.date) : "TBD"}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 

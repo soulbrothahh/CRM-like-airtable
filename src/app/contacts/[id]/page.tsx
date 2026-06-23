@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useData } from "@/components/DataProvider";
+import { useEvents } from "@/components/EventsProvider";
 import { ContactForm } from "@/components/ContactForm";
 import { Modal } from "@/components/Modal";
 import { QuickActions } from "@/components/QuickActions";
@@ -35,6 +36,7 @@ export default function ContactDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { update, remove } = useData();
+  const { events } = useEvents();
   const [contact, setContact] = useState<Contact | null>(null);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +79,7 @@ export default function ContactDetail() {
     );
 
   const c = contact;
+  const metAtEvent = c.event_id ? events.find((e) => e.id === c.event_id) : null;
 
   return (
     <div className="px-4 py-5 sm:px-6">
@@ -145,6 +148,17 @@ export default function ContactDetail() {
             />
             <Info label="TikTok" value={c.tiktok} href={tiktokUrl(c.tiktok)} />
             <Info label="Source" value={c.source} />
+            {metAtEvent && (
+              <div>
+                <div className="label">Met at</div>
+                <Link
+                  href={`/events/${metAtEvent.id}`}
+                  className="text-sm text-gold-600 hover:underline"
+                >
+                  🌺 {metAtEvent.name}
+                </Link>
+              </div>
+            )}
             <Info label="Audience" value={c.audience_type} />
             <Info label="Owner" value={c.owner} />
           </InfoCard>

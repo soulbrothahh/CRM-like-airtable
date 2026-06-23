@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useEvents } from "./EventsProvider";
 import {
   BOTTLE_PRIORITIES,
   BOTTLE_STATUSES,
@@ -29,6 +30,7 @@ export function ContactForm({
   onSubmit: (values: FormValues) => Promise<void> | void;
   onCancel: () => void;
 }) {
+  const { events } = useEvents();
   const [v, setV] = useState<FormValues>(toForm(initial));
   const [saving, setSaving] = useState(false);
 
@@ -128,6 +130,20 @@ export function ContactForm({
         </Field>
         <Field label="Source / where you met">
           <input className="input" value={v.source} onChange={(e) => set("source", e.target.value)} placeholder="DM, event, referral…" />
+        </Field>
+        <Field label="Met at (event)">
+          <select
+            className="input"
+            value={v.event_id ?? ""}
+            onChange={(e) => set("event_id", e.target.value || null)}
+          >
+            <option value="">— none —</option>
+            {events.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.name}
+              </option>
+            ))}
+          </select>
         </Field>
         <Field label="Owner / assigned to">
           <input className="input" value={v.owner} onChange={(e) => set("owner", e.target.value)} />
