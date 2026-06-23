@@ -93,6 +93,7 @@ export default function EventDetail() {
             <h1 className="text-2xl font-bold tracking-tight">{e.name}</h1>
             <div className="mt-1 text-sm text-taupe-500">
               {e.date ? `📅 ${formatDate(e.date)}` : "No date yet"}
+              {e.time ? ` · ${e.time}` : ""}
               {e.venue || e.city
                 ? ` · 📍 ${[e.venue, [e.city, e.state].filter(Boolean).join(", ")]
                     .filter(Boolean)

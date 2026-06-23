@@ -11,6 +11,7 @@ function blankEvent(): NewEvent {
     type: "Kalapu",
     status: "Idea",
     date: null,
+    time: "",
     city: "",
     state: "",
     venue: "",
@@ -80,6 +81,9 @@ export function EventForm({
         </Field>
         <Field label="Date">
           <input className="input" type="date" value={v.date ?? ""} onChange={(e) => set("date", e.target.value || null)} />
+        </Field>
+        <Field label="Time">
+          <input className="input" value={v.time} onChange={(e) => set("time", e.target.value)} placeholder="e.g. 7:00 PM" />
         </Field>
         <Field label="Cost ($)">
           <input className="input" inputMode="numeric" value={v.cost ?? ""} onChange={(e) => set("cost", numOrNull(e.target.value))} />

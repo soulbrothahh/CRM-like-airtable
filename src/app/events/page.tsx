@@ -127,7 +127,12 @@ function EventCard({ event: e, metCount }: { event: CrmEvent; metCount: number }
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
         <EventTypeBadge type={e.type} />
-        {e.date && <span className="text-xs text-taupe-500">📅 {formatDate(e.date)}</span>}
+        {e.date && (
+          <span className="text-xs text-taupe-500">
+            📅 {formatDate(e.date)}
+            {e.time ? ` · ${e.time}` : ""}
+          </span>
+        )}
       </div>
       {(e.city || e.venue) && (
         <div className="truncate text-xs text-taupe-500">

@@ -41,6 +41,7 @@ function seedEvents(): CrmEvent[] {
     type: "Kalapu",
     status: "Idea",
     date: null,
+    time: "",
     city: "",
     state: "",
     venue: "",

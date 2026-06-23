@@ -101,6 +101,7 @@ create table if not exists public.events (
   type        text not null default 'Kalapu',
   status      text not null default 'Idea',
   date        date,
+  time        text not null default '',
   city        text not null default '',
   state       text not null default '',
   venue       text not null default '',
