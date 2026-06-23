@@ -190,6 +190,7 @@ export interface CrmEvent {
   type: EventType;
   status: EventStatus;
   date: string | null; // YYYY-MM-DD
+  time: string; // free-form, e.g. "7:00 PM" or "7–10pm"
   city: string;
   state: string;
   venue: string;
