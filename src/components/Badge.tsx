@@ -3,6 +3,7 @@ import {
   DEAL_TYPE_COLORS,
   EVENT_STATUS_COLORS,
   EVENT_TYPE_COLORS,
+  OUTREACH_STATUS_COLORS,
   PRIORITY_COLORS,
   RELATIONSHIP_COLORS,
   STAGE_COLORS,
@@ -15,6 +16,7 @@ import type {
   DealType,
   EventStatus,
   EventType,
+  OutreachStatus,
   RelationshipStrength,
   Status,
 } from "@/lib/types";
@@ -49,4 +51,8 @@ export function EventStatusBadge({ status }: { status: EventStatus }) {
 
 export function EventTypeBadge({ type }: { type: EventType }) {
   return <span className={`badge ${EVENT_TYPE_COLORS[type]}`}>{type}</span>;
+}
+
+export function OutreachStatusBadge({ status }: { status: OutreachStatus }) {
+  return <span className={`badge ${OUTREACH_STATUS_COLORS[status]}`}>{status}</span>;
 }

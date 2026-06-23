@@ -11,6 +11,7 @@ import { QuickActions } from "@/components/QuickActions";
 import { Select } from "@/components/ContactForm";
 import {
   BottleStatusBadge,
+  OutreachStatusBadge,
   PriorityBadge,
   RelationshipBadge,
   StatusBadge,
@@ -112,6 +113,7 @@ export default function ContactDetail() {
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               <StatusBadge status={c.status} />
+              <OutreachStatusBadge status={c.outreach_status} />
               <RelationshipBadge value={c.relationship_strength} />
               {c.bottle_recipient && <PriorityBadge priority={c.bottle_priority} />}
               {c.bottle_recipient && <BottleStatusBadge status={c.bottle_status} />}
@@ -277,10 +279,17 @@ function InteractionLog({
 }) {
   const { update } = useData();
   const [type, setType] = useState<InteractionType>("Texted");
+  const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
   const [date, setDate] = useState(todayISO());
   const [notes, setNotes] = useState("");
   const [nextAction, setNextAction] = useState("");
   const [saving, setSaving] = useState(false);
+
+  function plusDays(n: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -291,10 +300,24 @@ function InteractionLog({
         contact_id: contactId,
         date,
         type,
+        direction,
         notes,
         next_action: nextAction,
       });
-      await update(contactId, { last_contacted_date: date });
+      // keep the outreach loop in sync: a sent message → awaiting reply +
+      // 3-day nudge; a received message → they replied, your move.
+      if (direction === "inbound") {
+        await update(contactId, {
+          outreach_status: "Replied",
+          next_follow_up_date: null,
+        });
+      } else {
+        await update(contactId, {
+          last_contacted_date: date,
+          outreach_status: "Awaiting reply",
+          next_follow_up_date: plusDays(3),
+        });
+      }
       setNotes("");
       setNextAction("");
       onChange();
@@ -315,6 +338,26 @@ function InteractionLog({
       </h3>
 
       <form onSubmit={add} className="mb-4 space-y-2 rounded-xl bg-cream-50/60 p-3">
+        <div className="flex rounded-xl bg-night-900/[0.03] p-0.5 ring-1 ring-night-900/10">
+          <button
+            type="button"
+            onClick={() => setDirection("outbound")}
+            className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+              direction === "outbound" ? "bg-night-900 text-cream-100" : "text-taupe-600"
+            }`}
+          >
+            → Sent
+          </button>
+          <button
+            type="button"
+            onClick={() => setDirection("inbound")}
+            className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+              direction === "inbound" ? "bg-sage-500 text-cream-100" : "text-taupe-600"
+            }`}
+          >
+            ← Received
+          </button>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <Select value={type} onChange={(v) => setType(v as InteractionType)} options={INTERACTION_TYPES} />
           <input
@@ -349,9 +392,16 @@ function InteractionLog({
         <ol className="relative space-y-4 border-l border-night-900/10 pl-5">
           {interactions.map((ix) => (
             <li key={ix.id} className="relative">
-              <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-gold-400 ring-4 ring-cream-50" />
+              <span
+                className={`absolute -left-[27px] top-1 h-3 w-3 rounded-full ring-4 ring-cream-50 ${
+                  ix.direction === "inbound" ? "bg-sage-500" : "bg-gold-400"
+                }`}
+              />
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-night-900">{ix.type}</span>
+                <span className="text-sm font-medium text-night-900">
+                  {ix.direction === "inbound" ? "← " : "→ "}
+                  {ix.type}
+                </span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-taupe-400">{formatDate(ix.date)}</span>
                   <button

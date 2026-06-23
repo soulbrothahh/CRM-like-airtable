@@ -23,6 +23,7 @@ create table if not exists public.contacts (
   owner                 text not null default '',
   tags                  text[] not null default '{}',
   event_id              uuid,  -- "Met at" — references events(id)
+  outreach_status       text not null default 'Not contacted',
   notes                 text not null default '',
   last_contacted_date   date,
   next_follow_up_date   date,
@@ -49,6 +50,7 @@ create table if not exists public.interactions (
   contact_id  uuid not null references public.contacts(id) on delete cascade,
   date        date not null default current_date,
   type        text not null default 'Texted',
+  direction   text not null default 'outbound',
   notes       text not null default '',
   next_action text not null default '',
   created_at  timestamptz not null default now()

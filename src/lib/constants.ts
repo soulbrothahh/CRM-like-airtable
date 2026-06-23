@@ -9,6 +9,7 @@ import type {
   EventType,
   InteractionType,
   LeadTemperature,
+  OutreachStatus,
   RelationshipStrength,
   Status,
 } from "./types";
@@ -232,4 +233,24 @@ export const EVENT_TYPE_COLORS: Record<EventType, string> = {
   Community: CLAY,
   Conference: INDIGO,
   Other: NEUTRAL,
+};
+
+// ---------------- Outreach ----------------
+
+export const OUTREACH_STATUSES: OutreachStatus[] = [
+  "Not contacted",
+  "Messaged",
+  "Awaiting reply",
+  "Replied",
+  "Following up",
+  "Closed",
+];
+
+export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, string> = {
+  "Not contacted": NEUTRAL,
+  Messaged: SKY,
+  "Awaiting reply": AMBER,
+  Replied: EMERALD,
+  "Following up": GOLD,
+  Closed: NEUTRAL,
 };

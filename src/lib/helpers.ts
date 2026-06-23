@@ -19,6 +19,7 @@ export function blankContact(): NewContact {
     owner: "",
     tags: [],
     event_id: null,
+    outreach_status: "Not contacted",
     notes: "",
     last_contacted_date: null,
     next_follow_up_date: null,

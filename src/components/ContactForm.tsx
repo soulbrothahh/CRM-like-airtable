@@ -7,6 +7,7 @@ import {
   BOTTLE_STATUSES,
   CONTACT_TYPES,
   LEAD_TEMPERATURES,
+  OUTREACH_STATUSES,
   RELATIONSHIP_STRENGTHS,
   STATUSES,
 } from "@/lib/constants";
@@ -121,6 +122,9 @@ export function ContactForm({
         </Field>
         <Field label="Status">
           <Select value={v.status} onChange={(x) => set("status", x as any)} options={STATUSES} />
+        </Field>
+        <Field label="Outreach status">
+          <Select value={v.outreach_status} onChange={(x) => set("outreach_status", x as any)} options={OUTREACH_STATUSES} />
         </Field>
         <Field label="Relationship strength">
           <Select value={v.relationship_strength} onChange={(x) => set("relationship_strength", x as any)} options={RELATIONSHIP_STRENGTHS} />

@@ -20,6 +20,7 @@ const COLUMNS: (keyof Contact)[] = [
   "audience_type",
   "owner",
   "tags",
+  "outreach_status",
   "notes",
   "last_contacted_date",
   "next_follow_up_date",

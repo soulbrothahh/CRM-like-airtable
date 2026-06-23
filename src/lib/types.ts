@@ -27,6 +27,15 @@ export type Status =
 
 export type BottlePriority = "Low" | "Medium" | "High" | "VIP";
 
+// Where someone is in the messaging/outreach loop.
+export type OutreachStatus =
+  | "Not contacted"
+  | "Messaged"
+  | "Awaiting reply"
+  | "Replied"
+  | "Following up"
+  | "Closed";
+
 export type BottleStatus =
   | "Not planned"
   | "Want to send"
@@ -65,6 +74,7 @@ export interface Contact {
   owner: string;
   tags: string[];
   event_id: string | null; // "Met at" — links to a CrmEvent
+  outreach_status: OutreachStatus;
   notes: string;
   last_contacted_date: string | null; // YYYY-MM-DD
   next_follow_up_date: string | null; // YYYY-MM-DD
@@ -87,11 +97,14 @@ export interface Contact {
   updated_at: string;
 }
 
+export type InteractionDirection = "outbound" | "inbound";
+
 export interface Interaction {
   id: string;
   contact_id: string;
   date: string; // YYYY-MM-DD
   type: InteractionType;
+  direction?: InteractionDirection; // sent (outbound) vs received (inbound)
   notes: string;
   next_action: string;
   created_at: string;
