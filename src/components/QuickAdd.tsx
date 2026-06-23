@@ -16,6 +16,7 @@ export function QuickAdd() {
   const [handle, setHandle] = useState("");
   const [city, setCity] = useState("");
   const [tags, setTags] = useState("");
+  const [note, setNote] = useState("");
   const [eventId, setEventId] = useState(""); // kept across adds for event sessions
   const [saving, setSaving] = useState(false);
   const [justAdded, setJustAdded] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export function QuickAdd() {
     setHandle("");
     setCity("");
     setTags("");
+    setNote("");
   }
 
   async function save(addAnother: boolean) {
@@ -39,6 +41,7 @@ export function QuickAdd() {
         city: city.trim() || ev?.city || "",
         source: ev ? `Met at ${ev.name}` : "Met at event",
         event_id: eventId || null,
+        notes: note.trim(),
         tags: tags
           .split(",")
           .map((t) => t.trim())
@@ -112,6 +115,15 @@ export function QuickAdd() {
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="e.g. event, gym owner"
+            />
+          </div>
+          <div>
+            <label className="label">Notes</label>
+            <textarea
+              className="input min-h-[60px]"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="How you met, what you talked about, anything to remember…"
             />
           </div>
           {events.length > 0 && (
