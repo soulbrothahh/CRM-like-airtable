@@ -124,28 +124,37 @@ function Section({
           <div className="p-5 text-sm text-taupe-400">{empty}</div>
         ) : (
           list.map((c) => (
-            <div key={c.id} className="flex flex-wrap items-center gap-3 p-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold-300/80 to-gold-600 text-xs font-bold text-night-900">
-                {initials(c.name)}
-              </span>
-              <div className="min-w-0 flex-1">
-                <Link href={`/contacts/${c.id}`} className="font-medium hover:text-gold-600">
-                  {c.name}
-                </Link>
-                <div className="truncate text-xs text-taupe-400">
-                  {c.bottle_quantity ?? 1} bottle(s)
-                  {showSent && c.date_sent ? ` · sent ${formatDate(c.date_sent)}` : ""}
-                  {showSent && c.tracking_number ? ` · ${c.tracking_number}` : ""}
-                  {!showSent && c.shipping_address
-                    ? ` · ${c.shipping_address}`
-                    : !showSent
-                    ? " · no address"
-                    : ""}
+            <div key={c.id} className="p-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold-300/80 to-gold-600 text-xs font-bold text-night-900">
+                  {initials(c.name)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/contacts/${c.id}`}
+                    className="block truncate font-semibold hover:text-gold-600"
+                  >
+                    {c.name}
+                  </Link>
+                  <div className="truncate text-xs text-taupe-400">
+                    {c.bottle_quantity ?? 1} bottle(s)
+                    {showSent && c.date_sent ? ` · sent ${formatDate(c.date_sent)}` : ""}
+                    {showSent && c.tracking_number ? ` · ${c.tracking_number}` : ""}
+                    {!showSent && c.shipping_address
+                      ? ` · ${c.shipping_address}`
+                      : !showSent
+                      ? " · no address"
+                      : ""}
+                  </div>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <PriorityBadge priority={c.bottle_priority} />
+                  <BottleStatusBadge status={c.bottle_status} />
                 </div>
               </div>
-              <PriorityBadge priority={c.bottle_priority} />
-              <BottleStatusBadge status={c.bottle_status} />
-              <QuickActions contact={c} compact />
+              <div className="mt-2 pl-12">
+                <QuickActions contact={c} compact />
+              </div>
             </div>
           ))
         )}

@@ -68,11 +68,12 @@ export function QuickActions({
       });
     });
 
-  const cls = compact ? "btn-subtle px-2 py-1 text-xs" : "btn-ghost text-xs";
+  const cls =
+    (compact ? "btn-subtle px-2.5 py-1 text-xs" : "btn-ghost text-xs") + " shrink-0";
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="-mb-0.5 flex w-full items-center gap-1.5 overflow-x-auto pb-0.5">
         <button disabled={busy} onClick={approve} className={cls} title="Approve for bottles">
           ✅ Approve
         </button>

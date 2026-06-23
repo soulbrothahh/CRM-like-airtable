@@ -39,7 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <DealsProvider>
                 <div className="flex min-h-screen">
                   <Sidebar />
-                  <main className="flex-1 pb-24 md:pb-8">{children}</main>
+                  <main className="w-full min-w-0 flex-1 overflow-x-hidden pb-24 md:pb-8">
+                  {children}
+                </main>
                 </div>
                 <BottomNav />
               </DealsProvider>

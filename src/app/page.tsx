@@ -246,23 +246,30 @@ function Panel({
 
 function Row({ contact, children }: { contact: Contact; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 p-3">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold-300/80 to-gold-600 text-xs font-bold text-night-900">
-        {initials(contact.name)}
-      </span>
-      <div className="min-w-0 flex-1">
-        <Link href={`/contacts/${contact.id}`} className="font-medium hover:text-gold-600">
-          {contact.name}
-        </Link>
-        <div className="flex items-center gap-2 text-xs text-taupe-400">
-          {contact.contact_type}
-          {children}
+    <div className="p-3">
+      <div className="flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold-300/80 to-gold-600 text-xs font-bold text-night-900">
+          {initials(contact.name)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <Link
+            href={`/contacts/${contact.id}`}
+            className="block truncate font-semibold hover:text-gold-600"
+          >
+            {contact.name}
+          </Link>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-taupe-400">
+            {contact.contact_type}
+            {children}
+          </div>
+        </div>
+        <div className="shrink-0">
+          <StatusBadge status={contact.status} />
         </div>
       </div>
-      <div className="hidden sm:block">
-        <StatusBadge status={contact.status} />
+      <div className="mt-2 pl-12">
+        <QuickActions contact={contact} compact />
       </div>
-      <QuickActions contact={contact} compact />
     </div>
   );
 }
