@@ -10,7 +10,7 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-30 border-b border-white/5 bg-ink-950/80 px-4 py-3 backdrop-blur sm:px-6">
+    <div className="sticky top-0 z-30 border-b border-night-900/5 bg-cream-100/80 px-4 py-3 backdrop-blur sm:px-6">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="md:hidden">
@@ -18,14 +18,14 @@ export function PageHeader({
           </div>
           <div className="hidden md:block">
             <h1 className="text-xl font-bold tracking-tight">{title}</h1>
-            {subtitle && <p className="text-sm text-slate-400">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-taupe-500">{subtitle}</p>}
           </div>
         </div>
         {action}
       </div>
       <div className="mt-2 md:hidden">
         <h1 className="text-lg font-bold tracking-tight">{title}</h1>
-        {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-taupe-500">{subtitle}</p>}
       </div>
     </div>
   );

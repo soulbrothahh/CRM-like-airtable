@@ -8,8 +8,8 @@ import { BottomNav, Sidebar } from "@/components/Nav";
 import { ServiceWorker } from "@/components/ServiceWorker";
 
 export const metadata: Metadata = {
-  title: "NuKava CRM",
-  description: "Track NuKava relationships and bottle gifting.",
+  title: "núkava · Better Moments",
+  description: "Track your connections and kava giveaways — built for better moments.",
   manifest: "/manifest.json",
   icons: {
     icon: "/icons/icon-192.png",
@@ -17,13 +17,13 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
-    title: "NuKava CRM",
+    statusBarStyle: "default",
+    title: "núkava",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0e0f",
+  themeColor: "#FBF7F0",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

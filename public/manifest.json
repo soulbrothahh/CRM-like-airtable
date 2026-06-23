@@ -1,11 +1,11 @@
 {
-  "name": "NuKava CRM",
-  "short_name": "NuKava",
-  "description": "Track NuKava relationships and bottle gifting.",
+  "name": "núkava · Better Moments",
+  "short_name": "núkava",
+  "description": "Track your connections and kava giveaways — built for better moments.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0e0f",
-  "theme_color": "#0a0e0f",
+  "background_color": "#FBF7F0",
+  "theme_color": "#16120E",
   "orientation": "portrait",
   "icons": [
     {

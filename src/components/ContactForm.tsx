@@ -194,7 +194,7 @@ export function ContactForm({
         </Field>
       </Section>
 
-      <div className="sticky bottom-0 -mx-5 flex justify-end gap-2 border-t border-white/5 bg-ink-850/95 px-5 py-3 backdrop-blur">
+      <div className="sticky bottom-0 -mx-5 flex justify-end gap-2 border-t border-night-900/5 bg-cream-50/95 px-5 py-3 backdrop-blur">
         <button type="button" onClick={onCancel} className="btn-ghost">
           Cancel
         </button>
@@ -209,7 +209,7 @@ export function ContactForm({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
         {title}
       </h3>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{children}</div>
@@ -260,7 +260,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (b: boolean) =>
       type="button"
       onClick={() => onChange(!value)}
       className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
-        value ? "bg-palm-500" : "bg-ink-700"
+        value ? "bg-sage-500" : "bg-sand-300"
       }`}
     >
       <span

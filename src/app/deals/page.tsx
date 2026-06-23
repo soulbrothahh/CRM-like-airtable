@@ -82,7 +82,7 @@ export default function DealsPage() {
 
       <div className="space-y-5 px-4 py-4 sm:px-6">
         {loading ? (
-          <div className="py-20 text-center text-slate-500">Loading…</div>
+          <div className="py-20 text-center text-taupe-400">Loading…</div>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -105,8 +105,8 @@ export default function DealsPage() {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className={`rounded-xl px-3 py-1.5 text-xs ring-1 ring-white/10 ${
-                  typeFilter ? "bg-kava-500/15 text-kava-200" : "bg-white/5 text-slate-300"
+                className={`rounded-xl px-3 py-1.5 text-xs ring-1 ring-night-900/10 ${
+                  typeFilter ? "bg-gold-400/15 text-gold-700" : "bg-night-900/[0.03] text-taupe-600"
                 }`}
               >
                 <option value="">All types</option>
@@ -116,11 +116,11 @@ export default function DealsPage() {
                   </option>
                 ))}
               </select>
-              <div className="ml-auto flex rounded-xl bg-white/5 p-0.5 ring-1 ring-white/10">
+              <div className="ml-auto flex rounded-xl bg-night-900/[0.03] p-0.5 ring-1 ring-night-900/10">
                 <button
                   onClick={() => setMode("board")}
                   className={`rounded-lg px-3 py-1 text-xs font-medium ${
-                    mode === "board" ? "bg-kava-500 text-ink-950" : "text-slate-300"
+                    mode === "board" ? "bg-gold-400 text-night-900" : "text-taupe-600"
                   }`}
                 >
                   Board
@@ -128,7 +128,7 @@ export default function DealsPage() {
                 <button
                   onClick={() => setMode("list")}
                   className={`rounded-lg px-3 py-1 text-xs font-medium ${
-                    mode === "list" ? "bg-kava-500 text-ink-950" : "text-slate-300"
+                    mode === "list" ? "bg-gold-400 text-night-900" : "text-taupe-600"
                   }`}
                 >
                   List
@@ -167,12 +167,12 @@ function Stat({
     <div className="card p-4">
       <div
         className={`text-2xl font-bold ${
-          warn ? "text-rose-300" : accent ? "text-kava-300" : "text-slate-100"
+          warn ? "text-rose-600" : accent ? "text-gold-600" : "text-night-900"
         }`}
       >
         {value}
       </div>
-      <div className="mt-1 text-xs text-slate-400">{label}</div>
+      <div className="mt-1 text-xs text-taupe-500">{label}</div>
     </div>
   );
 }
@@ -193,7 +193,7 @@ function Board({
           <div key={stage} className="w-72 shrink-0">
             <div className="mb-2 flex items-center justify-between px-1">
               <StageBadge stage={stage} />
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-taupe-400">
                 {col.length} · {formatMoney(total)}
               </span>
             </div>
@@ -202,7 +202,7 @@ function Board({
                 <DealCard key={d.id} deal={d} onMove={onMove} />
               ))}
               {col.length === 0 && (
-                <div className="rounded-xl border border-dashed border-white/10 p-4 text-center text-xs text-slate-600">
+                <div className="rounded-xl border border-dashed border-night-900/10 p-4 text-center text-xs text-taupe-400">
                   Empty
                 </div>
               )}
@@ -224,20 +224,20 @@ function DealCard({
   const overdue = isOverdue(deal.next_step_date);
   return (
     <div className="card p-3">
-      <Link href={`/deals/${deal.id}`} className="block font-medium hover:text-kava-300">
+      <Link href={`/deals/${deal.id}`} className="block font-medium hover:text-gold-600">
         {deal.title}
       </Link>
       {deal.company && deal.company !== deal.title && (
-        <div className="truncate text-xs text-slate-500">{deal.company}</div>
+        <div className="truncate text-xs text-taupe-400">{deal.company}</div>
       )}
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <DealTypeBadge type={deal.deal_type} />
-        <span className="text-sm font-semibold text-kava-300">
+        <span className="text-sm font-semibold text-gold-600">
           {formatMoney(deal.value)}
         </span>
       </div>
       {deal.next_step && (
-        <div className={`mt-2 text-xs ${overdue ? "text-rose-300" : "text-slate-400"}`}>
+        <div className={`mt-2 text-xs ${overdue ? "text-rose-600" : "text-taupe-500"}`}>
           → {deal.next_step}
           {deal.next_step_date ? ` · ${formatDate(deal.next_step_date)}` : ""}
           {overdue ? " (overdue)" : ""}
@@ -268,20 +268,20 @@ function DealList({
 }) {
   const sorted = [...deals].sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
   return (
-    <div className="card divide-y divide-white/5">
+    <div className="card divide-y divide-night-900/10">
       {sorted.map((d) => (
         <div key={d.id} className="flex flex-wrap items-center gap-3 p-3">
           <div className="min-w-0 flex-1">
-            <Link href={`/deals/${d.id}`} className="font-medium hover:text-kava-300">
+            <Link href={`/deals/${d.id}`} className="font-medium hover:text-gold-600">
               {d.title}
             </Link>
-            <div className="truncate text-xs text-slate-500">
+            <div className="truncate text-xs text-taupe-400">
               {d.company}
               {d.expected_close_date ? ` · close ${formatDate(d.expected_close_date)}` : ""}
             </div>
           </div>
           <DealTypeBadge type={d.deal_type} />
-          <span className="w-20 text-right text-sm font-semibold text-kava-300">
+          <span className="w-20 text-right text-sm font-semibold text-gold-600">
             {formatMoney(d.value)}
           </span>
           <select
@@ -298,7 +298,7 @@ function DealList({
         </div>
       ))}
       {sorted.length === 0 && (
-        <div className="p-10 text-center text-slate-500">No deals yet.</div>
+        <div className="p-10 text-center text-taupe-400">No deals yet.</div>
       )}
     </div>
   );

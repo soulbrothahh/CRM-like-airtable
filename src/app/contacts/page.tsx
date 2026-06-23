@@ -77,8 +77,8 @@ export default function ContactsPage() {
               onClick={() => setView(v.id)}
               className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium ring-1 transition ${
                 view === v.id
-                  ? "bg-kava-500 text-ink-950 ring-kava-400"
-                  : "bg-white/5 text-slate-300 ring-white/10 hover:bg-white/10"
+                  ? "bg-gold-400 text-night-900 ring-gold-400"
+                  : "bg-night-900/[0.03] text-taupe-600 ring-night-900/10 hover:bg-night-900/[0.05]"
               }`}
             >
               {v.label}
@@ -105,11 +105,11 @@ export default function ContactsPage() {
               Clear filters
             </button>
           )}
-          <div className="ml-auto flex rounded-xl bg-white/5 p-0.5 ring-1 ring-white/10">
+          <div className="ml-auto flex rounded-xl bg-night-900/[0.03] p-0.5 ring-1 ring-night-900/10">
             <button
               onClick={() => setMode("card")}
               className={`rounded-lg px-3 py-1 text-xs font-medium ${
-                mode === "card" ? "bg-kava-500 text-ink-950" : "text-slate-300"
+                mode === "card" ? "bg-gold-400 text-night-900" : "text-taupe-600"
               }`}
             >
               Cards
@@ -117,7 +117,7 @@ export default function ContactsPage() {
             <button
               onClick={() => setMode("table")}
               className={`rounded-lg px-3 py-1 text-xs font-medium ${
-                mode === "table" ? "bg-kava-500 text-ink-950" : "text-slate-300"
+                mode === "table" ? "bg-gold-400 text-night-900" : "text-taupe-600"
               }`}
             >
               Table
@@ -127,7 +127,7 @@ export default function ContactsPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="py-20 text-center text-slate-500">Loading…</div>
+          <div className="py-20 text-center text-taupe-400">Loading…</div>
         ) : mode === "table" ? (
           <ContactTable contacts={filtered} />
         ) : (
@@ -136,7 +136,7 @@ export default function ContactsPage() {
               <ContactCard key={c.id} contact={c} />
             ))}
             {filtered.length === 0 && (
-              <div className="col-span-full py-20 text-center text-slate-500">
+              <div className="col-span-full py-20 text-center text-taupe-400">
                 No contacts match this view.
               </div>
             )}
@@ -168,8 +168,8 @@ function FilterSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`rounded-xl px-3 py-1.5 text-xs ring-1 ring-white/10 focus:outline-none ${
-        value ? "bg-kava-500/15 text-kava-200" : "bg-white/5 text-slate-300"
+      className={`rounded-xl px-3 py-1.5 text-xs ring-1 ring-night-900/10 focus:outline-none ${
+        value ? "bg-gold-400/15 text-gold-700" : "bg-night-900/[0.03] text-taupe-600"
       }`}
     >
       <option value="">{placeholder}</option>

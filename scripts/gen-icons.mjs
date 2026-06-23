@@ -51,9 +51,9 @@ function lerp(a, b, t) {
 
 function makeIcon(size, { rounded = true } = {}) {
   const buf = Buffer.alloc(size * size * 4);
-  // gradient colors (kava-400 -> kava-700)
-  const top = [255, 157, 60];
-  const bot = [194, 74, 12];
+  // NuKava: warm charcoal gradient (night-700 -> night-900)
+  const top = [44, 38, 32];
+  const bot = [22, 18, 14];
   const radius = rounded ? size * 0.22 : 0;
 
   // N geometry
@@ -103,9 +103,10 @@ function makeIcon(size, { rounded = true } = {}) {
       }
 
       if (isN) {
-        buf[i] = 255;
-        buf[i + 1] = 251;
-        buf[i + 2] = 245;
+        // cream letter
+        buf[i] = 251;
+        buf[i + 1] = 247;
+        buf[i + 2] = 240;
         buf[i + 3] = 255;
       } else {
         buf[i] = bg[0];
@@ -115,6 +116,25 @@ function makeIcon(size, { rounded = true } = {}) {
       }
     }
   }
+
+  // gold accent dot in the top-right corner (brand mark)
+  const dr = size * 0.075;
+  const dcx = size * 0.8;
+  const dcy = size * 0.2;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const dx = x - dcx;
+      const dy = y - dcy;
+      if (dx * dx + dy * dy <= dr * dr) {
+        const i = (y * size + x) * 4;
+        buf[i] = 216;
+        buf[i + 1] = 163;
+        buf[i + 2] = 62;
+        buf[i + 3] = 255;
+      }
+    }
+  }
+
   return encodePng(size, buf);
 }
 

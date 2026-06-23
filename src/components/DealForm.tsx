@@ -129,7 +129,7 @@ export function DealForm({
         </Field>
       </div>
 
-      <div className="sticky bottom-0 -mx-5 flex justify-end gap-2 border-t border-white/5 bg-ink-850/95 px-5 py-3 backdrop-blur">
+      <div className="sticky bottom-0 -mx-5 flex justify-end gap-2 border-t border-night-900/5 bg-cream-50/95 px-5 py-3 backdrop-blur">
         <button type="button" onClick={onCancel} className="btn-ghost">
           Cancel
         </button>

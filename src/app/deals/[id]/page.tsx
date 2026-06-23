@@ -59,12 +59,12 @@ export default function DealDetail() {
     router.push("/deals");
   }
 
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading…</div>;
+  if (loading) return <div className="p-10 text-center text-taupe-400">Loading…</div>;
   if (!deal)
     return (
-      <div className="p-10 text-center text-slate-500">
+      <div className="p-10 text-center text-taupe-400">
         Deal not found.{" "}
-        <Link href="/deals" className="text-kava-300">
+        <Link href="/deals" className="text-gold-600">
           Back to deals
         </Link>
       </div>
@@ -85,7 +85,7 @@ export default function DealDetail() {
           <button onClick={() => setEditing(true)} className="btn-ghost text-sm">
             Edit
           </button>
-          <button onClick={handleDelete} className="btn-subtle text-sm text-rose-300">
+          <button onClick={handleDelete} className="btn-subtle text-sm text-rose-600">
             Delete
           </button>
         </div>
@@ -95,12 +95,12 @@ export default function DealDetail() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{d.title}</h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-taupe-500">
               {d.company}
               {linked ? (
                 <>
                   {" · "}
-                  <Link href={`/contacts/${linked.id}`} className="text-kava-300 hover:underline">
+                  <Link href={`/contacts/${linked.id}`} className="text-gold-600 hover:underline">
                     {linked.name}
                   </Link>
                 </>
@@ -112,14 +112,14 @@ export default function DealDetail() {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-kava-300">{formatMoney(d.value)}</div>
-            <div className="text-xs text-slate-400">
+            <div className="text-2xl font-bold text-gold-600">{formatMoney(d.value)}</div>
+            <div className="text-xs text-taupe-500">
               {probability}% · weighted {formatMoney(weighted)}
             </div>
           </div>
         </div>
 
-        <div className="mt-4 border-t border-white/5 pt-4">
+        <div className="mt-4 border-t border-night-900/5 pt-4">
           <label className="label">Move stage</label>
           <div className="-mx-0.5 flex flex-wrap gap-1.5">
             {DEAL_STAGES.map((s) => (
@@ -128,8 +128,8 @@ export default function DealDetail() {
                 onClick={() => moveStage(s)}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium ring-1 transition ${
                   s === d.stage
-                    ? "bg-kava-500 text-ink-950 ring-kava-400"
-                    : "bg-white/5 text-slate-300 ring-white/10 hover:bg-white/10"
+                    ? "bg-gold-400 text-night-900 ring-gold-400"
+                    : "bg-night-900/[0.03] text-taupe-600 ring-night-900/10 hover:bg-night-900/[0.05]"
                 }`}
               >
                 {s}
@@ -142,7 +142,7 @@ export default function DealDetail() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-1">
           <div className="card p-4">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
               Deal info
             </h3>
             <div className="space-y-2.5">
@@ -153,7 +153,7 @@ export default function DealDetail() {
                 <div className="label">Next step</div>
                 <div
                   className={`text-sm ${
-                    isOverdue(d.next_step_date) ? "text-rose-300" : "text-slate-200"
+                    isOverdue(d.next_step_date) ? "text-rose-600" : "text-night-800"
                   }`}
                 >
                   {d.next_step || "—"}
@@ -166,10 +166,10 @@ export default function DealDetail() {
 
           {d.notes && (
             <div className="card p-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
                 Notes
               </h3>
-              <p className="whitespace-pre-wrap text-sm text-slate-300">{d.notes}</p>
+              <p className="whitespace-pre-wrap text-sm text-taupe-600">{d.notes}</p>
             </div>
           )}
         </div>
@@ -190,13 +190,13 @@ function Info({ label, value }: { label: string; value: string }) {
   if (!value || value === "—") return (
     <div>
       <div className="label">{label}</div>
-      <div className="text-sm text-slate-500">—</div>
+      <div className="text-sm text-taupe-400">—</div>
     </div>
   );
   return (
     <div>
       <div className="label">{label}</div>
-      <div className="text-sm text-slate-200">{value}</div>
+      <div className="text-sm text-night-800">{value}</div>
     </div>
   );
 }
@@ -241,11 +241,11 @@ function ActivityLog({
 
   return (
     <div className="card p-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
         Activity & progress
       </h3>
 
-      <form onSubmit={add} className="mb-4 space-y-2 rounded-xl bg-ink-900/60 p-3">
+      <form onSubmit={add} className="mb-4 space-y-2 rounded-xl bg-cream-50/60 p-3">
         <div className="grid grid-cols-2 gap-2">
           <Select value={type} onChange={(v) => setType(v as DealActivityType)} options={DEAL_ACTIVITY_TYPES} />
           <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -270,23 +270,23 @@ function ActivityLog({
       </form>
 
       {activities.length === 0 ? (
-        <p className="text-sm text-slate-500">No activity logged yet.</p>
+        <p className="text-sm text-taupe-400">No activity logged yet.</p>
       ) : (
-        <ol className="relative space-y-4 border-l border-white/10 pl-5">
+        <ol className="relative space-y-4 border-l border-night-900/10 pl-5">
           {activities.map((a) => (
             <li key={a.id} className="relative">
-              <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-kava-500 ring-4 ring-ink-850" />
+              <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-gold-400 ring-4 ring-cream-50" />
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-100">{a.type}</span>
+                <span className="text-sm font-medium text-night-900">{a.type}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">{formatDate(a.date)}</span>
-                  <button onClick={() => removeActivity(a.id)} className="text-xs text-slate-500 hover:text-rose-300">
+                  <span className="text-xs text-taupe-400">{formatDate(a.date)}</span>
+                  <button onClick={() => removeActivity(a.id)} className="text-xs text-taupe-400 hover:text-rose-600">
                     ✕
                   </button>
                 </div>
               </div>
-              {a.notes && <p className="text-sm text-slate-300">{a.notes}</p>}
-              {a.next_action && <p className="mt-0.5 text-xs text-kava-300">→ {a.next_action}</p>}
+              {a.notes && <p className="text-sm text-taupe-600">{a.notes}</p>}
+              {a.next_action && <p className="mt-0.5 text-xs text-gold-600">→ {a.next_action}</p>}
             </li>
           ))}
         </ol>

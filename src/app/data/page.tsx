@@ -62,13 +62,13 @@ export default function DataPage() {
       <div className="max-w-2xl space-y-4 px-4 py-5 sm:px-6">
         <div
           className={`card p-4 text-sm ${
-            storageMode === "cloud" ? "ring-palm-400/20" : "ring-kava-400/20"
+            storageMode === "cloud" ? "ring-sage-500/20" : "ring-gold-400/20"
           }`}
         >
           <div className="font-semibold">
             {storageMode === "cloud" ? "☁️ Cloud sync is ON" : "📱 On-device mode"}
           </div>
-          <p className="mt-1 text-slate-400">
+          <p className="mt-1 text-taupe-500">
             {storageMode === "cloud"
               ? "Your data lives in Supabase and syncs across every device you log in from."
               : "Your data is stored privately in this browser. Add Supabase keys (see README) to sync across devices. Use Export below to back up or move your data."}
@@ -76,7 +76,7 @@ export default function DataPage() {
         </div>
 
         <Card title="Export">
-          <p className="mb-3 text-sm text-slate-400">
+          <p className="mb-3 text-sm text-taupe-500">
             Download your contacts as a spreadsheet, or a full JSON backup
             (contacts + interactions).
           </p>
@@ -91,9 +91,9 @@ export default function DataPage() {
         </Card>
 
         <Card title="Import">
-          <p className="mb-3 text-sm text-slate-400">
+          <p className="mb-3 text-sm text-taupe-500">
             Upload a CSV (e.g. a creator list) or a JSON backup. CSV headers like
-            <span className="text-slate-200"> name, email, instagram, phone, city, followers </span>
+            <span className="text-night-800"> name, email, instagram, phone, city, followers </span>
             are matched automatically. Existing contacts with the same ID are updated.
           </p>
           <button onClick={() => fileRef.current?.click()} className="btn-ghost">
@@ -106,15 +106,15 @@ export default function DataPage() {
             onChange={onFile}
             className="hidden"
           />
-          {message && <p className="mt-3 text-sm text-slate-300">{message}</p>}
+          {message && <p className="mt-3 text-sm text-taupe-600">{message}</p>}
         </Card>
 
         <Card title="CSV template">
-          <p className="mb-2 text-sm text-slate-400">
-            A minimal CSV just needs a <span className="text-slate-200">name</span> column.
+          <p className="mb-2 text-sm text-taupe-500">
+            A minimal CSV just needs a <span className="text-night-800">name</span> column.
             Common extras:
           </p>
-          <pre className="overflow-x-auto rounded-xl bg-ink-900 p-3 text-xs text-slate-300">
+          <pre className="overflow-x-auto rounded-xl bg-cream-50 p-3 text-xs text-taupe-600">
 {`name,instagram,phone,email,city,state,contact_type,followers,notes
 Jane Doe,@janedoe,555-0100,jane@x.com,Austin,TX,Creator,42000,Met at expo`}
           </pre>

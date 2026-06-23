@@ -63,7 +63,7 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
     <div className="card overflow-x-auto">
       <table className="w-full min-w-[1100px] text-sm">
         <thead>
-          <tr className="border-b border-white/5 text-left text-xs uppercase tracking-wide text-slate-400">
+          <tr className="border-b border-night-900/5 text-left text-xs uppercase tracking-wide text-taupe-500">
             <Th onClick={() => toggleSort("name")}>Name{arrow("name")}</Th>
             <Th onClick={() => toggleSort("contact_type")}>Type{arrow("contact_type")}</Th>
             <Th onClick={() => toggleSort("status")}>Status{arrow("status")}</Th>
@@ -89,20 +89,20 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
           {sorted.map((c) => (
             <tr
               key={c.id}
-              className="border-b border-white/5 align-middle hover:bg-white/[0.02]"
+              className="border-b border-night-900/5 align-middle hover:bg-night-900/[0.03]"
             >
               <td className="px-3 py-2.5">
                 <Link
                   href={`/contacts/${c.id}`}
-                  className="font-medium text-slate-100 hover:text-kava-300"
+                  className="font-medium text-night-900 hover:text-gold-600"
                 >
                   {c.name || "Untitled"}
                 </Link>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-taupe-400">
                   {c.instagram || c.city || ""}
                 </div>
               </td>
-              <td className="px-3 py-2.5 text-slate-300">{c.contact_type}</td>
+              <td className="px-3 py-2.5 text-taupe-600">{c.contact_type}</td>
 
               <EditCell
                 editing={editing}
@@ -174,7 +174,7 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
                 />
               </EditCell>
 
-              <td className="px-3 py-2.5 text-slate-300">
+              <td className="px-3 py-2.5 text-taupe-600">
                 {c.follower_count ? c.follower_count.toLocaleString() : "—"}
               </td>
 
@@ -182,8 +182,8 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
                 <span
                   className={
                     isOverdue(c.next_follow_up_date)
-                      ? "font-medium text-rose-300"
-                      : "text-slate-300"
+                      ? "font-medium text-rose-600"
+                      : "text-taupe-600"
                   }
                 >
                   {formatDate(c.next_follow_up_date)}
@@ -197,7 +197,7 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
           ))}
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={9} className="px-3 py-10 text-center text-slate-500">
+              <td colSpan={9} className="px-3 py-10 text-center text-taupe-400">
                 No contacts match this view.
               </td>
             </tr>
@@ -212,7 +212,7 @@ function Th({ children, onClick }: { children: React.ReactNode; onClick: () => v
   return (
     <th
       onClick={onClick}
-      className="cursor-pointer select-none px-3 py-2.5 font-semibold hover:text-slate-200"
+      className="cursor-pointer select-none px-3 py-2.5 font-semibold hover:text-night-800"
     >
       {children}
     </th>
@@ -242,7 +242,7 @@ function EditCell({
       ) : (
         <button
           onClick={() => onEdit({ id, field })}
-          className="rounded-lg px-1 py-0.5 hover:ring-1 hover:ring-white/10"
+          className="rounded-lg px-1 py-0.5 hover:ring-1 hover:ring-night-900/10"
           title="Click to edit"
         >
           {display}

@@ -129,7 +129,7 @@ export default function OutreachPage() {
         {/* Left: controls */}
         <div className="space-y-4 lg:col-span-1">
           <div className="card p-4">
-            <div className="mb-3 flex rounded-xl bg-white/5 p-0.5 ring-1 ring-white/10">
+            <div className="mb-3 flex rounded-xl bg-night-900/[0.03] p-0.5 ring-1 ring-night-900/10">
               {(["B2B", "Ambassador"] as OutreachCategory[]).map((c) => (
                 <button
                   key={c}
@@ -138,7 +138,7 @@ export default function OutreachPage() {
                     setTemplateId("");
                   }}
                   className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium ${
-                    category === c ? "bg-kava-500 text-ink-950" : "text-slate-300"
+                    category === c ? "bg-gold-400 text-night-900" : "text-taupe-600"
                   }`}
                 >
                   {c}
@@ -179,7 +179,7 @@ export default function OutreachPage() {
           </div>
 
           <div className="card p-4">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
               Templates
             </h3>
             <div className="space-y-1.5">
@@ -189,12 +189,12 @@ export default function OutreachPage() {
                   onClick={() => applyTemplate(t.id)}
                   className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition ${
                     templateId === t.id
-                      ? "bg-kava-500/15 text-kava-200 ring-1 ring-kava-400/30"
-                      : "bg-white/5 text-slate-200 hover:bg-white/10"
+                      ? "bg-gold-400/15 text-gold-700 ring-1 ring-gold-400/30"
+                      : "bg-night-900/[0.03] text-night-800 hover:bg-night-900/[0.05]"
                   }`}
                 >
                   <span>{t.label}</span>
-                  <span className="text-[10px] uppercase tracking-wide text-slate-500">
+                  <span className="text-[10px] uppercase tracking-wide text-taupe-400">
                     {t.channel}
                   </span>
                 </button>
@@ -203,10 +203,10 @@ export default function OutreachPage() {
           </div>
 
           <div className="card p-4">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
               ✨ AI personalize
             </h3>
-            <p className="mb-2 text-xs text-slate-400">
+            <p className="mb-2 text-xs text-taupe-500">
               {aiAvailable === false
                 ? "Optional. Add an ANTHROPIC_API_KEY to draft custom messages with AI."
                 : "Describe the goal and let AI draft a tailored message."}
@@ -224,7 +224,7 @@ export default function OutreachPage() {
             >
               {generating ? "Drafting…" : "Generate with AI"}
             </button>
-            {aiError && <p className="mt-2 text-xs text-rose-300">{aiError}</p>}
+            {aiError && <p className="mt-2 text-xs text-rose-600">{aiError}</p>}
           </div>
         </div>
 
@@ -232,7 +232,7 @@ export default function OutreachPage() {
         <div className="lg:col-span-2">
           <div className="card flex h-full flex-col p-4">
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-gold-600/80">
                 Message
               </h3>
               <button onClick={copy} disabled={!message} className="btn-ghost text-xs">

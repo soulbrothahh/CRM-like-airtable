@@ -60,32 +60,33 @@ export default function Dashboard() {
   return (
     <div>
       <PageHeader
-        title="Dashboard"
-        subtitle="Who needs attention today"
+        title="Better Moments"
+        subtitle="Your connections, at a glance"
         action={
           <button onClick={() => setAdding(true)} className="btn-primary">
-            + Add contact
+            + Add connection
           </button>
         }
       />
 
       <div className="space-y-6 px-4 py-5 sm:px-6">
+        <Hero count={contacts.length} onAdd={() => setAdding(true)} />
         {loading ? (
-          <div className="py-20 text-center text-slate-500">Loading…</div>
+          <div className="py-20 text-center text-taupe-400">Loading…</div>
         ) : (
           <>
             {/* Stat cards */}
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Stat label="Total contacts" value={stats.total} href="/contacts" />
+              <Stat label="Connections" value={stats.total} href="/contacts" />
               <Stat
-                label="Approved for bottles"
+                label="Approved to gift"
                 value={stats.approved}
                 href="/bottles"
                 accent
               />
-              <Stat label="Bottles to ship" value={stats.bottlesToShip} href="/bottles" accent />
-              <Stat label="Bottles sent" value={stats.sent} href="/bottles" />
-              <Stat label="Hot leads" value={stats.hot} href="/contacts" />
+              <Stat label="Bottles to send" value={stats.bottlesToShip} href="/bottles" accent />
+              <Stat label="Bottles gifted" value={stats.sent} href="/bottles" />
+              <Stat label="Warm & hot" value={stats.hot} href="/contacts" />
               <Stat label="Missing address" value={stats.missingAddress.length} href="/bottles" warn={stats.missingAddress.length > 0} />
               <Stat label="Follow-ups due" value={stats.todayFollow.length} warn={stats.todayFollow.length > 0} />
               <Stat label="Sales generated" value={`$${stats.sales.toLocaleString()}`} />
@@ -93,7 +94,7 @@ export default function Dashboard() {
 
             {/* Today's follow-ups */}
             <Panel
-              title="Today’s Follow-Ups"
+              title="People to Follow Up With"
               hint="Overdue and due today"
               empty="🎉 No follow-ups due. You’re all caught up."
               items={stats.todayFollow}
@@ -101,7 +102,7 @@ export default function Dashboard() {
                 <Row key={c.id} contact={c}>
                   <span
                     className={`text-xs ${
-                      isOverdue(c.next_follow_up_date) ? "text-rose-300" : "text-slate-400"
+                      isOverdue(c.next_follow_up_date) ? "text-rose-600" : "text-taupe-500"
                     }`}
                   >
                     {formatDate(c.next_follow_up_date)}
@@ -113,13 +114,13 @@ export default function Dashboard() {
 
             {/* Ready to ship */}
             <Panel
-              title="Ready to Ship"
+              title="Ready to Gift"
               hint="Approved with an address"
               empty="Nothing ready to ship right now."
               items={stats.ready}
               render={(c) => (
                 <Row key={c.id} contact={c}>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-taupe-500">
                     {c.bottle_quantity ?? 1} bottle(s)
                   </span>
                 </Row>
@@ -149,6 +150,38 @@ export default function Dashboard() {
   );
 }
 
+function Hero({ count, onAdd }: { count: number; onAdd: () => void }) {
+  return (
+    <section className="relative overflow-hidden rounded-3xl bg-night-grad p-6 text-cream-100 shadow-lift sm:p-8">
+      <div className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-gold-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-14 -left-10 h-44 w-44 rounded-full bg-sage-500/20 blur-3xl" />
+      <div className="relative">
+        <span className="inline-flex items-center gap-2 rounded-full bg-cream-100/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-gold-300 ring-1 ring-cream-100/15">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold-400" /> Built for better moments
+        </span>
+        <h1 className="mt-4 max-w-xl text-2xl font-extrabold leading-tight sm:text-3xl">
+          Warm connections, calm follow-ups, kava worth sharing.
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-cream-200/80">
+          {count} {count === 1 ? "person" : "people"} in your circle. Add someone new, or
+          see who to reach out to today.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <button onClick={onAdd} className="btn-gold">
+            + Add a connection
+          </button>
+          <Link
+            href="/bottles"
+            className="inline-flex items-center gap-2 rounded-full bg-cream-100/10 px-4 py-2.5 text-sm font-semibold text-cream-100 ring-1 ring-cream-100/20 transition hover:bg-cream-100/20"
+          >
+            🌿 Kava Giveaway List
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Stat({
   label,
   value,
@@ -164,18 +197,18 @@ function Stat({
 }) {
   const body = (
     <div
-      className={`card p-4 transition hover:ring-white/10 ${
-        accent ? "ring-kava-400/20" : ""
+      className={`card p-4 transition hover:ring-night-900/10 ${
+        accent ? "ring-gold-400/20" : ""
       }`}
     >
       <div
         className={`text-2xl font-bold ${
-          warn ? "text-rose-300" : accent ? "text-kava-300" : "text-slate-100"
+          warn ? "text-rose-600" : accent ? "text-gold-600" : "text-night-900"
         }`}
       >
         {value}
       </div>
-      <div className="mt-1 text-xs text-slate-400">{label}</div>
+      <div className="mt-1 text-xs text-taupe-500">{label}</div>
     </div>
   );
   return href ? <Link href={href}>{body}</Link> : body;
@@ -198,11 +231,11 @@ function Panel({
     <section>
       <div className="mb-2 flex items-baseline justify-between">
         <h2 className="text-base font-semibold">{title}</h2>
-        <span className="text-xs text-slate-500">{hint}</span>
+        <span className="text-xs text-taupe-400">{hint}</span>
       </div>
-      <div className="card divide-y divide-white/5">
+      <div className="card divide-y divide-night-900/10">
         {items.length === 0 ? (
-          <div className="p-5 text-sm text-slate-500">{empty}</div>
+          <div className="p-5 text-sm text-taupe-400">{empty}</div>
         ) : (
           items.map((c) => render(c))
         )}
@@ -214,14 +247,14 @@ function Panel({
 function Row({ contact, children }: { contact: Contact; children?: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-3 p-3">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-kava-400/80 to-kava-700 text-xs font-bold text-ink-950">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold-300/80 to-gold-600 text-xs font-bold text-night-900">
         {initials(contact.name)}
       </span>
       <div className="min-w-0 flex-1">
-        <Link href={`/contacts/${contact.id}`} className="font-medium hover:text-kava-300">
+        <Link href={`/contacts/${contact.id}`} className="font-medium hover:text-gold-600">
           {contact.name}
         </Link>
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-taupe-400">
           {contact.contact_type}
           {children}
         </div>

@@ -6,11 +6,11 @@ import { useData } from "./DataProvider";
 import { useAuth } from "./AuthProvider";
 
 const LINKS = [
-  { href: "/", label: "Dashboard", icon: "🏠", short: "Home" },
-  { href: "/contacts", label: "Contacts", icon: "👥", short: "People" },
+  { href: "/", label: "Better Moments", icon: "🏝️", short: "Home" },
+  { href: "/contacts", label: "Connections", icon: "👋", short: "People" },
   { href: "/deals", label: "Deals", icon: "🤝", short: "Deals" },
-  { href: "/bottles", label: "Bottles", icon: "🍶", short: "Bottles" },
-  { href: "/outreach", label: "Outreach", icon: "✉️", short: "Reach" },
+  { href: "/bottles", label: "Kava Giveaways", icon: "🌿", short: "Kava" },
+  { href: "/outreach", label: "Warm Intros", icon: "✉️", short: "Intros" },
   { href: "/data", label: "Import / Export", icon: "⇄", short: "Data" },
 ];
 
@@ -18,7 +18,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { storageMode } = useData();
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-white/5 bg-ink-900/60 p-4 md:flex">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-night-900/5 bg-cream-50/60 p-4 md:flex">
       <Brand />
       <nav className="mt-6 flex flex-col gap-1">
         {LINKS.map((l) => {
@@ -29,8 +29,8 @@ export function Sidebar() {
               href={l.href}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                 active
-                  ? "bg-kava-500/15 text-kava-200 ring-1 ring-kava-400/20"
-                  : "text-slate-300 hover:bg-white/5"
+                  ? "bg-gold-400/15 text-gold-700 ring-1 ring-gold-400/20"
+                  : "text-taupe-600 hover:bg-night-900/[0.04]"
               }`}
             >
               <span className="text-base">{l.icon}</span>
@@ -49,7 +49,7 @@ export function Sidebar() {
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-white/5 bg-ink-900/90 backdrop-blur md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-night-900/5 bg-cream-50/90 backdrop-blur md:hidden">
       {LINKS.map((l) => {
         const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
@@ -57,7 +57,7 @@ export function BottomNav() {
             key={l.href}
             href={l.href}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium ${
-              active ? "text-kava-300" : "text-slate-400"
+              active ? "text-gold-600" : "text-taupe-500"
             }`}
           >
             <span className="text-lg">{l.icon}</span>
@@ -71,14 +71,11 @@ export function BottomNav() {
 
 export function Brand() {
   return (
-    <Link href="/" className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-kava-400 to-kava-600 text-lg font-black text-ink-950 shadow-glow">
-        N
+    <Link href="/" className="flex items-baseline gap-2">
+      <span className="text-2xl font-extrabold lowercase tracking-tight text-night-900">
+        n&uacute;kava
       </span>
-      <div className="leading-tight">
-        <div className="text-sm font-bold tracking-tight">NuKava</div>
-        <div className="text-[11px] uppercase tracking-widest text-kava-300/80">CRM</div>
-      </div>
+      <span className="h-1.5 w-1.5 translate-y-[-2px] rounded-full bg-gold-400" />
     </Link>
   );
 }
@@ -86,31 +83,31 @@ export function Brand() {
 function StorageChip({ mode }: { mode: "cloud" | "local" }) {
   const { email, signOut } = useAuth();
   return (
-    <div className="rounded-xl bg-ink-850 px-3 py-2 text-[11px] ring-1 ring-white/5">
+    <div className="rounded-xl bg-cream-50 px-3 py-2 text-[11px] ring-1 ring-night-900/5">
       <div className="flex items-center gap-2">
         <span
           className={`h-2 w-2 rounded-full ${
-            mode === "cloud" ? "bg-palm-400" : "bg-kava-400"
+            mode === "cloud" ? "bg-sage-500" : "bg-gold-400"
           }`}
         />
-        <span className="font-semibold text-slate-200">
+        <span className="font-semibold text-night-800">
           {mode === "cloud" ? "Cloud sync on" : "On-device mode"}
         </span>
       </div>
       {mode === "cloud" && email ? (
         <>
-          <p className="mt-1 truncate text-slate-500" title={email}>
+          <p className="mt-1 truncate text-taupe-400" title={email}>
             {email}
           </p>
           <button
             onClick={signOut}
-            className="mt-1.5 text-slate-400 hover:text-kava-300"
+            className="mt-1.5 text-taupe-500 hover:text-gold-600"
           >
             Sign out
           </button>
         </>
       ) : (
-        <p className="mt-1 text-slate-500">
+        <p className="mt-1 text-taupe-400">
           {mode === "cloud"
             ? "Synced across your devices."
             : "Add Supabase keys to sync."}

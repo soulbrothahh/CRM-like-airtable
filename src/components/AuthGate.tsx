@@ -11,7 +11,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (!cloudEnabled) return <>{children}</>;
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-500">
+      <div className="flex min-h-screen items-center justify-center text-taupe-400">
         Loading…
       </div>
     );
@@ -53,13 +53,16 @@ function LoginScreen() {
         <div className="mb-6 flex justify-center">
           <Brand />
         </div>
-        <h1 className="text-center text-lg font-semibold">
-          {mode === "signin" ? "Sign in to NuKava CRM" : "Create your account"}
+        <p className="-mt-2 mb-1 text-center text-[11px] font-semibold uppercase tracking-widest text-gold-600">
+          Built for better moments
+        </p>
+        <h1 className="text-center text-lg font-bold">
+          {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
-        <p className="mt-1 mb-5 text-center text-sm text-slate-400">
+        <p className="mt-1 mb-5 text-center text-sm text-taupe-500">
           {mode === "signin"
-            ? "Access your contacts on any device."
-            : "Set up your private cloud account."}
+            ? "Sign in to your connections on any device."
+            : "Set up your private workspace."}
         </p>
 
         <form onSubmit={submit} className="space-y-3">
@@ -89,8 +92,8 @@ function LoginScreen() {
             />
           </div>
 
-          {error && <p className="text-sm text-rose-300">{error}</p>}
-          {info && <p className="text-sm text-palm-400">{info}</p>}
+          {error && <p className="text-sm text-rose-600">{error}</p>}
+          {info && <p className="text-sm text-sage-500">{info}</p>}
 
           <button disabled={busy} className="btn-primary w-full">
             {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
@@ -103,7 +106,7 @@ function LoginScreen() {
             setError("");
             setInfo("");
           }}
-          className="mt-4 w-full text-center text-sm text-slate-400 hover:text-kava-300"
+          className="mt-4 w-full text-center text-sm text-taupe-500 hover:text-gold-600"
         >
           {mode === "signin"
             ? "Need an account? Create one"

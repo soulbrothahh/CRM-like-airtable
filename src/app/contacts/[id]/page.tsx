@@ -65,12 +65,12 @@ export default function ContactDetail() {
     router.push("/contacts");
   }
 
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading…</div>;
+  if (loading) return <div className="p-10 text-center text-taupe-400">Loading…</div>;
   if (!contact)
     return (
-      <div className="p-10 text-center text-slate-500">
+      <div className="p-10 text-center text-taupe-400">
         Contact not found.{" "}
-        <Link href="/contacts" className="text-kava-300">
+        <Link href="/contacts" className="text-gold-600">
           Back to contacts
         </Link>
       </div>
@@ -88,7 +88,7 @@ export default function ContactDetail() {
           <button onClick={() => setEditing(true)} className="btn-ghost text-sm">
             Edit
           </button>
-          <button onClick={handleDelete} className="btn-subtle text-sm text-rose-300">
+          <button onClick={handleDelete} className="btn-subtle text-sm text-rose-600">
             Delete
           </button>
         </div>
@@ -97,12 +97,12 @@ export default function ContactDetail() {
       {/* Header */}
       <div className="card mb-4 p-5">
         <div className="flex flex-wrap items-start gap-4">
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-kava-400 to-kava-700 text-xl font-bold text-ink-950">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-300 to-gold-600 text-xl font-bold text-night-900">
             {initials(c.name)}
           </span>
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold tracking-tight">{c.name}</h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-taupe-500">
               {c.contact_type}
               {c.city ? ` · ${c.city}${c.state ? ", " + c.state : ""}` : ""}
               {c.follower_count ? ` · ${c.follower_count.toLocaleString()} followers` : ""}
@@ -115,7 +115,7 @@ export default function ContactDetail() {
             </div>
           </div>
         </div>
-        <div className="mt-4 border-t border-white/5 pt-4">
+        <div className="mt-4 border-t border-night-900/5 pt-4">
           <QuickActions contact={c} onChange={load} />
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function ContactDetail() {
               <div className="label">Next follow-up</div>
               <div
                 className={`text-sm ${
-                  isOverdue(c.next_follow_up_date) ? "text-rose-300" : "text-slate-200"
+                  isOverdue(c.next_follow_up_date) ? "text-rose-600" : "text-night-800"
                 }`}
               >
                 {formatDate(c.next_follow_up_date)}
@@ -177,7 +177,7 @@ export default function ContactDetail() {
         <div className="space-y-4 lg:col-span-2">
           {c.notes && (
             <InfoCard title="Notes">
-              <p className="whitespace-pre-wrap text-sm text-slate-300">{c.notes}</p>
+              <p className="whitespace-pre-wrap text-sm text-taupe-600">{c.notes}</p>
             </InfoCard>
           )}
 
@@ -203,7 +203,7 @@ export default function ContactDetail() {
 function InfoCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card p-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
         {title}
       </h3>
       <div className="space-y-2.5">{children}</div>
@@ -229,12 +229,12 @@ function Info({
           href={href}
           target="_blank"
           rel="noreferrer"
-          className="text-sm text-kava-300 hover:underline"
+          className="text-sm text-gold-600 hover:underline"
         >
           {value}
         </a>
       ) : (
-        <div className="whitespace-pre-wrap text-sm text-slate-200">{value}</div>
+        <div className="whitespace-pre-wrap text-sm text-night-800">{value}</div>
       )}
     </div>
   );
@@ -284,11 +284,11 @@ function InteractionLog({
 
   return (
     <div className="card p-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-kava-300/80">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gold-600/80">
         Interaction history
       </h3>
 
-      <form onSubmit={add} className="mb-4 space-y-2 rounded-xl bg-ink-900/60 p-3">
+      <form onSubmit={add} className="mb-4 space-y-2 rounded-xl bg-cream-50/60 p-3">
         <div className="grid grid-cols-2 gap-2">
           <Select value={type} onChange={(v) => setType(v as InteractionType)} options={INTERACTION_TYPES} />
           <input
@@ -318,27 +318,27 @@ function InteractionLog({
       </form>
 
       {interactions.length === 0 ? (
-        <p className="text-sm text-slate-500">No interactions logged yet.</p>
+        <p className="text-sm text-taupe-400">No interactions logged yet.</p>
       ) : (
-        <ol className="relative space-y-4 border-l border-white/10 pl-5">
+        <ol className="relative space-y-4 border-l border-night-900/10 pl-5">
           {interactions.map((ix) => (
             <li key={ix.id} className="relative">
-              <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-kava-500 ring-4 ring-ink-850" />
+              <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-gold-400 ring-4 ring-cream-50" />
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-100">{ix.type}</span>
+                <span className="text-sm font-medium text-night-900">{ix.type}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">{formatDate(ix.date)}</span>
+                  <span className="text-xs text-taupe-400">{formatDate(ix.date)}</span>
                   <button
                     onClick={() => removeIx(ix.id)}
-                    className="text-xs text-slate-500 hover:text-rose-300"
+                    className="text-xs text-taupe-400 hover:text-rose-600"
                   >
                     ✕
                   </button>
                 </div>
               </div>
-              {ix.notes && <p className="text-sm text-slate-300">{ix.notes}</p>}
+              {ix.notes && <p className="text-sm text-taupe-600">{ix.notes}</p>}
               {ix.next_action && (
-                <p className="mt-0.5 text-xs text-kava-300">→ {ix.next_action}</p>
+                <p className="mt-0.5 text-xs text-gold-600">→ {ix.next_action}</p>
               )}
             </li>
           ))}

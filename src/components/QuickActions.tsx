@@ -186,8 +186,8 @@ function FollowUpForm({
                 onClick={() => setDate(value)}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium ring-1 transition ${
                   active
-                    ? "bg-kava-500 text-ink-950 ring-kava-400"
-                    : "bg-white/5 text-slate-300 ring-white/10 hover:bg-white/10"
+                    ? "bg-gold-400 text-night-900 ring-gold-400"
+                    : "bg-night-900/[0.03] text-taupe-600 ring-night-900/10 hover:bg-night-900/[0.05]"
                 }`}
               >
                 {p.label}
