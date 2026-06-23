@@ -21,6 +21,7 @@ create table if not exists public.contacts (
   follower_count        integer,
   audience_type         text not null default '',
   owner                 text not null default '',
+  tags                  text[] not null default '{}',
   notes                 text not null default '',
   last_contacted_date   date,
   next_follow_up_date   date,

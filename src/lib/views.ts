@@ -82,6 +82,7 @@ export function searchContact(c: Contact, q: string): boolean {
     c.phone,
     c.contact_type,
     c.source,
+    ...(c.tags ?? []),
   ]
     .join(" ")
     .toLowerCase();

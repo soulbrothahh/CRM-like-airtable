@@ -113,6 +113,18 @@ export default function ContactDetail() {
               {c.bottle_recipient && <PriorityBadge priority={c.bottle_priority} />}
               {c.bottle_recipient && <BottleStatusBadge status={c.bottle_status} />}
             </div>
+            {c.tags && c.tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {c.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-full bg-clay-500/10 px-2.5 py-0.5 text-xs font-medium text-clay-600"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div className="mt-4 border-t border-night-900/5 pt-4">

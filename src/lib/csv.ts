@@ -19,6 +19,7 @@ const COLUMNS: (keyof Contact)[] = [
   "follower_count",
   "audience_type",
   "owner",
+  "tags",
   "notes",
   "last_contacted_date",
   "next_follow_up_date",
@@ -41,7 +42,8 @@ const COLUMNS: (keyof Contact)[] = [
 
 function escapeCell(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const s = String(value);
+  // arrays (e.g. tags) are joined with semicolons so commas stay CSV-safe
+  const s = Array.isArray(value) ? value.join("; ") : String(value);
   if (/[",\n]/.test(s)) {
     return '"' + s.replace(/"/g, '""') + '"';
   }
@@ -113,6 +115,14 @@ const NUMBER_FIELDS = new Set<keyof Contact>([
 
 function coerce(field: keyof Contact, raw: string): unknown {
   const v = raw.trim();
+  if (field === "tags") {
+    return v
+      ? v
+          .split(/[;,]/)
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
+  }
   if (BOOL_FIELDS.has(field)) {
     return /^(true|yes|y|1)$/i.test(v);
   }
