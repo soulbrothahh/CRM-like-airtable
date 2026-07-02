@@ -89,7 +89,7 @@ function Snippet({ title, code }: { title: string; code: string }) {
           {copied ? "Copied ✓" : "Copy"}
         </button>
       </div>
-      <pre className="overflow-x-auto rounded-xl bg-night-900 p-3 text-xs leading-relaxed text-cream-100">
+      <pre className="overflow-x-auto rounded-xl bg-charcoal p-3 text-xs leading-relaxed text-paper-100">
         <code>{code}</code>
       </pre>
     </div>

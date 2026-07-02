@@ -1,4 +1,5 @@
 import { Brand } from "./Nav";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function PageHeader({
   title,
@@ -21,7 +22,10 @@ export function PageHeader({
             {subtitle && <p className="text-sm text-taupe-500">{subtitle}</p>}
           </div>
         </div>
-        {action}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {action}
+        </div>
       </div>
       <div className="mt-2 md:hidden">
         <h1 className="text-lg font-bold tracking-tight">{title}</h1>

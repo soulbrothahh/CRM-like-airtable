@@ -69,16 +69,17 @@ export const INTERACTION_TYPES: InteractionType[] = [
   "Signed up as ambassador",
 ];
 
-// Soft, warm badge styles tuned for a light cream background:
-// gentle tinted fill + readable dark-tinted text + subtle ring.
+// Soft, warm badge styles: gentle tinted fill + readable tinted text + subtle
+// ring. NuKava tokens (taupe/gold/sage/clay) flip automatically via the theme
+// CSS variables; the standard Tailwind hues need explicit dark: text shades.
 const NEUTRAL = "bg-taupe-400/15 text-taupe-600 ring-taupe-400/30";
-const SKY = "bg-sky-500/12 text-sky-700 ring-sky-500/25";
-const INDIGO = "bg-indigo-500/12 text-indigo-700 ring-indigo-500/25";
-const AMBER = "bg-amber-500/15 text-amber-700 ring-amber-500/30";
-const VIOLET = "bg-violet-500/12 text-violet-700 ring-violet-500/25";
-const FUCHSIA = "bg-fuchsia-500/12 text-fuchsia-700 ring-fuchsia-500/25";
-const EMERALD = "bg-emerald-500/12 text-emerald-700 ring-emerald-500/25";
-const ROSE = "bg-rose-500/12 text-rose-700 ring-rose-500/25";
+const SKY = "bg-sky-500/12 text-sky-700 ring-sky-500/25 dark:bg-sky-400/15 dark:text-sky-300 dark:ring-sky-400/30";
+const INDIGO = "bg-indigo-500/12 text-indigo-700 ring-indigo-500/25 dark:bg-indigo-400/15 dark:text-indigo-300 dark:ring-indigo-400/30";
+const AMBER = "bg-amber-500/15 text-amber-700 ring-amber-500/30 dark:bg-amber-400/15 dark:text-amber-300 dark:ring-amber-400/30";
+const VIOLET = "bg-violet-500/12 text-violet-700 ring-violet-500/25 dark:bg-violet-400/15 dark:text-violet-300 dark:ring-violet-400/30";
+const FUCHSIA = "bg-fuchsia-500/12 text-fuchsia-700 ring-fuchsia-500/25 dark:bg-fuchsia-400/15 dark:text-fuchsia-300 dark:ring-fuchsia-400/30";
+const EMERALD = "bg-emerald-500/12 text-emerald-700 ring-emerald-500/25 dark:bg-emerald-400/15 dark:text-emerald-300 dark:ring-emerald-400/30";
+const ROSE = "bg-rose-500/12 text-rose-700 ring-rose-500/25 dark:bg-rose-400/15 dark:text-rose-300 dark:ring-rose-400/30";
 const GOLD = "bg-gold-400/18 text-gold-700 ring-gold-500/30";
 const SAGE = "bg-sage-500/15 text-sage-600 ring-sage-500/30";
 const CLAY = "bg-clay-500/12 text-clay-600 ring-clay-500/25";
