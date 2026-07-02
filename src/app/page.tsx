@@ -225,17 +225,17 @@ function UpcomingEvents() {
 
 function Hero({ count, onAdd }: { count: number; onAdd: () => void }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-night-grad p-6 text-cream-100 shadow-lift sm:p-8">
+    <section className="relative overflow-hidden rounded-3xl bg-night-grad p-6 text-paper-100 shadow-lift sm:p-8">
       <div className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-gold-400/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-14 -left-10 h-44 w-44 rounded-full bg-sage-500/20 blur-3xl" />
       <div className="relative">
-        <span className="inline-flex items-center gap-2 rounded-full bg-cream-100/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-gold-300 ring-1 ring-cream-100/15">
+        <span className="inline-flex items-center gap-2 rounded-full bg-paper-100/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-gold-300 ring-1 ring-paper-100/15">
           <span className="h-1.5 w-1.5 rounded-full bg-gold-400" /> Built for better moments
         </span>
         <h1 className="mt-4 max-w-xl text-2xl font-extrabold leading-tight sm:text-3xl">
           Warm connections, calm follow-ups, kava worth sharing.
         </h1>
-        <p className="mt-2 max-w-md text-sm text-cream-200/80">
+        <p className="mt-2 max-w-md text-sm text-paper-200/80">
           {count} {count === 1 ? "person" : "people"} in your circle. Add someone new, or
           see who to reach out to today.
         </p>
@@ -245,7 +245,7 @@ function Hero({ count, onAdd }: { count: number; onAdd: () => void }) {
           </button>
           <Link
             href="/bottles"
-            className="inline-flex items-center gap-2 rounded-full bg-cream-100/10 px-4 py-2.5 text-sm font-semibold text-cream-100 ring-1 ring-cream-100/20 transition hover:bg-cream-100/20"
+            className="inline-flex items-center gap-2 rounded-full bg-paper-100/10 px-4 py-2.5 text-sm font-semibold text-paper-100 ring-1 ring-paper-100/20 transition hover:bg-paper-100/20"
           >
             🌿 Kava Giveaway List
           </Link>

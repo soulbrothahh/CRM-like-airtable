@@ -75,7 +75,11 @@ export function Brand({ className = "h-7" }: { className?: string }) {
   return (
     <Link href="/" aria-label="nukava" className="inline-flex items-center">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/nukava-logo.svg" alt="nukava" className={`${className} w-auto`} />
+      <img
+        src="/nukava-logo.svg"
+        alt="nukava"
+        className={`${className} w-auto dark:invert`}
+      />
     </Link>
   );
 }

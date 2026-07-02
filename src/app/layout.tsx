@@ -32,9 +32,16 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// Applies the saved (or system) theme before first paint so there's no flash
+// of the wrong theme. Must run inline in <head>, ahead of hydration.
+const themeInit = `(function(){try{var t=localStorage.getItem("nukava_theme");var d=t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d){document.documentElement.classList.add("dark");var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content","#15110C");}}catch(e){}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+      </head>
       <body>
         <AuthProvider>
           <AuthGate>

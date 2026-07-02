@@ -1,54 +1,67 @@
 import type { Config } from "tailwindcss";
 
+// Theme tokens resolve through CSS variables (declared in globals.css) so the
+// whole app can flip between the warm-light and night themes by toggling the
+// `dark` class — no per-component classes needed.
+const v = (name: string) => `rgb(var(${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         // NuKava palette — warm cream base, charcoal premium, kava-gold + earthy accents
         cream: {
-          50: "#FEFCF8",
-          100: "#FBF7F0",
-          200: "#F4ECDF",
-          300: "#EADCC6",
+          50: v("--cream-50"),
+          100: v("--cream-100"),
+          200: v("--cream-200"),
+          300: v("--cream-300"),
         },
         sand: {
-          200: "#EFE6D6",
-          300: "#E4D7C0",
-          400: "#D8C6A8",
+          200: v("--sand-200"),
+          300: v("--sand-300"),
+          400: v("--sand-400"),
         },
         night: {
-          700: "#2C2620",
-          800: "#201B16",
-          900: "#16120E",
+          700: v("--night-700"),
+          800: v("--night-800"),
+          900: v("--night-900"),
         },
         taupe: {
-          400: "#9A8C7B",
-          500: "#7C6F5F",
-          600: "#5E5346",
+          400: v("--taupe-400"),
+          500: v("--taupe-500"),
+          600: v("--taupe-600"),
         },
         gold: {
-          300: "#E8C97C",
-          400: "#D8A33E",
-          500: "#C5871F",
-          600: "#A06B16",
-          700: "#7E5410",
+          300: v("--gold-300"),
+          400: v("--gold-400"),
+          500: v("--gold-500"),
+          600: v("--gold-600"),
+          700: v("--gold-700"),
         },
         clay: {
-          400: "#B5764A",
-          500: "#8A5A3B",
-          600: "#6F472D",
+          400: v("--clay-400"),
+          500: v("--clay-500"),
+          600: v("--clay-600"),
         },
         sage: {
-          400: "#8FA382",
-          500: "#6E8268",
-          600: "#54684F",
+          400: v("--sage-400"),
+          500: v("--sage-500"),
+          600: v("--sage-600"),
         },
         sunset: {
           400: "#EE9468",
           500: "#E0764A",
           600: "#C75F36",
         },
+        // Theme-stable literals for surfaces that stay dark (hero, code blocks)
+        // in BOTH themes — paper is always light cream, charcoal always night.
+        paper: {
+          100: "#FBF7F0",
+          200: "#F4ECDF",
+        },
+        charcoal: "#16120E",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "Plus Jakarta Sans", "system-ui", "sans-serif"],

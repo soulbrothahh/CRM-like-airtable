@@ -122,7 +122,7 @@ export default function DataPage() {
             </li>
             <li>2. Connect from Claude Code:</li>
           </ol>
-          <pre className="overflow-x-auto rounded-xl bg-night-900 p-3 text-xs leading-relaxed text-cream-100">
+          <pre className="overflow-x-auto rounded-xl bg-charcoal p-3 text-xs leading-relaxed text-paper-100">
 {`claude mcp add --transport http nukava \\
   ${typeof window !== "undefined" ? window.location.origin : "https://nukava.vercel.app"}/api/mcp \\
   --header "Authorization: Bearer YOUR_MCP_API_KEY"`}

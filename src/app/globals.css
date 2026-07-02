@@ -7,6 +7,62 @@
 :root {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, sans-serif;
+
+  /* ---- NuKava light theme (warm cream day) — RGB triplets ---- */
+  --cream-50: 254 252 248;
+  --cream-100: 251 247 240;
+  --cream-200: 244 236 223;
+  --cream-300: 234 220 198;
+  --sand-200: 239 230 214;
+  --sand-300: 228 215 192;
+  --sand-400: 216 198 168;
+  --night-700: 44 38 32;
+  --night-800: 32 27 22;
+  --night-900: 22 18 14;
+  --taupe-400: 154 140 123;
+  --taupe-500: 124 111 95;
+  --taupe-600: 94 83 70;
+  --gold-300: 232 201 124;
+  --gold-400: 216 163 62;
+  --gold-500: 197 135 31;
+  --gold-600: 160 107 22;
+  --gold-700: 126 84 16;
+  --clay-400: 181 118 74;
+  --clay-500: 138 90 59;
+  --clay-600: 111 71 45;
+  --sage-400: 143 163 130;
+  --sage-500: 110 130 104;
+  --sage-600: 84 104 79;
+}
+
+/* ---- NuKava dark theme (tropical luxury at night) ----
+   cream* = surfaces (now deep warm charcoal), night* = text (now light cream),
+   taupe* = muted text (lightened), accents brightened for contrast. */
+.dark {
+  --cream-50: 32 27 21; /* cards */
+  --cream-100: 21 17 12; /* page background */
+  --cream-200: 44 37 28; /* hover surfaces */
+  --cream-300: 58 50 38;
+  --sand-200: 51 43 33;
+  --sand-300: 63 54 42;
+  --sand-400: 76 65 50;
+  --night-700: 217 206 187;
+  --night-800: 232 223 206;
+  --night-900: 243 237 224; /* main text */
+  --taupe-400: 152 143 128;
+  --taupe-500: 177 167 148;
+  --taupe-600: 199 189 169;
+  --gold-300: 239 214 149;
+  --gold-400: 220 172 75;
+  --gold-500: 209 158 57;
+  --gold-600: 227 181 98;
+  --gold-700: 239 206 140;
+  --clay-400: 201 143 99;
+  --clay-500: 214 160 117;
+  --clay-600: 224 178 138;
+  --sage-400: 157 177 143;
+  --sage-500: 126 147 116;
+  --sage-600: 170 190 156;
 }
 
 html,
@@ -25,6 +81,16 @@ body {
     radial-gradient(900px 480px at -5% 0%, rgba(110, 130, 104, 0.08), transparent 55%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24'%3E%3Cpath d='M0 18 Q12 6 24 18 T48 18' fill='none' stroke='%238A5A3B' stroke-opacity='0.05' stroke-width='1.4'/%3E%3C/svg%3E");
   background-attachment: fixed, fixed, fixed;
+}
+
+.dark body {
+  background-image: radial-gradient(
+      1100px 520px at 88% -8%,
+      rgba(216, 163, 62, 0.07),
+      transparent 60%
+    ),
+    radial-gradient(900px 480px at -5% 0%, rgba(110, 130, 104, 0.06), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24'%3E%3Cpath d='M0 18 Q12 6 24 18 T48 18' fill='none' stroke='%23E8C97C' stroke-opacity='0.04' stroke-width='1.4'/%3E%3C/svg%3E");
 }
 
 ::-webkit-scrollbar {
@@ -52,7 +118,7 @@ body {
 
 @layer components {
   .card {
-    @apply rounded-3xl bg-cream-50 ring-1 ring-night-900/5 shadow-soft transition;
+    @apply rounded-3xl bg-cream-50 ring-1 ring-night-900/5 shadow-soft transition dark:ring-night-900/10;
   }
   .card-hover {
     @apply hover:-translate-y-0.5 hover:shadow-lift;
@@ -64,7 +130,7 @@ body {
     @apply btn bg-night-900 text-cream-100 shadow-soft hover:bg-night-800 hover:shadow-lift;
   }
   .btn-gold {
-    @apply btn bg-gold-400 text-night-900 shadow-gold hover:bg-gold-500;
+    @apply btn bg-gold-400 text-charcoal shadow-gold hover:bg-gold-500;
   }
   .btn-ghost {
     @apply btn bg-cream-50 text-night-800 ring-1 ring-night-900/10 hover:bg-cream-200;
@@ -73,7 +139,7 @@ body {
     @apply btn font-medium text-taupe-600 hover:bg-night-900/[0.04];
   }
   .input {
-    @apply w-full rounded-2xl bg-white px-3.5 py-2.5 text-sm text-night-900 ring-1 ring-night-900/10 placeholder:text-taupe-400 focus:outline-none focus:ring-2 focus:ring-gold-400/50;
+    @apply w-full rounded-2xl bg-white px-3.5 py-2.5 text-sm text-night-900 ring-1 ring-night-900/10 placeholder:text-taupe-400 focus:outline-none focus:ring-2 focus:ring-gold-400/50 dark:bg-cream-100;
   }
   .label {
     @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-taupe-500;
@@ -90,4 +156,20 @@ body {
   .chip-off {
     @apply chip bg-cream-50 text-taupe-600 ring-night-900/10 hover:bg-cream-200;
   }
+}
+
+/* ---- Dark-mode contrast fixes for utility combos used across the app ----
+   Selected chips/toggles pair bg-gold-400 with text-night-900, and avatars /
+   score tiles pair gold or band gradients with text-night-900. In dark mode
+   night-900 flips to light text, so pin those to charcoal for contrast. */
+.dark .bg-gold-400.text-night-900,
+.dark .bg-gradient-to-br.text-night-900 {
+  color: #16120e;
+}
+/* Destructive/rose text is too dark against night surfaces — lighten it. */
+.dark .text-rose-600 {
+  color: rgb(251 113 133);
+}
+.dark .hover\:text-rose-600:hover {
+  color: rgb(251 113 133);
 }

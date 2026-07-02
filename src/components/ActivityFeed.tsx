@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/helpers";
 import type { Activity } from "@/lib/types";
 
 const BAND_RING: Record<ScoreBand, string> = {
-  Cold: "from-taupe-300 to-taupe-500",
+  Cold: "from-taupe-400 to-taupe-500",
   Warm: "from-amber-300 to-amber-500",
   Hot: "from-clay-400 to-clay-600",
 };
