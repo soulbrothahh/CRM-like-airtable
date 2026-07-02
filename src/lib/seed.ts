@@ -444,18 +444,18 @@ const RAW_CONTACTS: Omit<
 // something to show on first run (demo / on-device mode).
 export const SEED_ACTIVITIES: Activity[] = [
   // Maya — hot: requested info, opened + clicked emails, browsed pricing.
-  { id: "a1", contact_id: "c1", visitor_id: "demo-maya", source: "form", type: "form_submit", title: "Requested wholesale info", url: "https://nukava.com/contact", metadata: {}, occurred_at: tsFromNow(-8), created_at: now },
+  { id: "a1", contact_id: "c1", visitor_id: "demo-maya", source: "form", type: "form_submit", title: "Requested wholesale info", url: "https://nukava.co/contact", metadata: {}, occurred_at: tsFromNow(-8), created_at: now },
   { id: "a2", contact_id: "c1", visitor_id: "demo-maya", source: "email", type: "email_open", title: "Opened ‘Welcome to NuKava’", url: "", metadata: {}, occurred_at: tsFromNow(-6), created_at: now },
-  { id: "a3", contact_id: "c1", visitor_id: "demo-maya", source: "email", type: "email_click", title: "Clicked the sample-kit link", url: "https://nukava.com/samples", metadata: {}, occurred_at: tsFromNow(-3), created_at: now },
+  { id: "a3", contact_id: "c1", visitor_id: "demo-maya", source: "email", type: "email_click", title: "Clicked the sample-kit link", url: "https://nukava.co/samples", metadata: {}, occurred_at: tsFromNow(-3), created_at: now },
   { id: "a4", contact_id: "c1", visitor_id: "demo-maya", source: "email", type: "email_open", title: "Opened ‘Your sample kit’", url: "", metadata: {}, occurred_at: tsFromNow(-3), created_at: now },
-  { id: "a5", contact_id: "c1", visitor_id: "demo-maya", source: "web", type: "page_view", title: "Viewed Pricing", url: "https://nukava.com/pricing", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
-  { id: "a6", contact_id: "c1", visitor_id: "demo-maya", source: "web", type: "session", title: "Visited the site", url: "https://nukava.com", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  { id: "a5", contact_id: "c1", visitor_id: "demo-maya", source: "web", type: "page_view", title: "Viewed Pricing", url: "https://nukava.co/pricing", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  { id: "a6", contact_id: "c1", visitor_id: "demo-maya", source: "web", type: "session", title: "Visited the site", url: "https://nukava.co", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
   // Jordan — warming up: browsing + email opens.
-  { id: "a7", contact_id: "c4", visitor_id: "demo-jordan", source: "web", type: "session", title: "Visited the site", url: "https://nukava.com", metadata: {}, occurred_at: tsFromNow(-5), created_at: now },
-  { id: "a8", contact_id: "c4", visitor_id: "demo-jordan", source: "web", type: "page_view", title: "Viewed Shop", url: "https://nukava.com/shop", metadata: {}, occurred_at: tsFromNow(-5), created_at: now },
+  { id: "a7", contact_id: "c4", visitor_id: "demo-jordan", source: "web", type: "session", title: "Visited the site", url: "https://nukava.co", metadata: {}, occurred_at: tsFromNow(-5), created_at: now },
+  { id: "a8", contact_id: "c4", visitor_id: "demo-jordan", source: "web", type: "page_view", title: "Viewed Shop", url: "https://nukava.co/shop", metadata: {}, occurred_at: tsFromNow(-5), created_at: now },
   { id: "a9", contact_id: "c4", visitor_id: "demo-jordan", source: "email", type: "email_open", title: "Opened ‘Meet NuKava’", url: "", metadata: {}, occurred_at: tsFromNow(-4), created_at: now },
   { id: "a10", contact_id: "c4", visitor_id: "demo-jordan", source: "email", type: "email_open", title: "Opened ‘Creator program’", url: "", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
-  { id: "a11", contact_id: "c4", visitor_id: "demo-jordan", source: "email", type: "email_click", title: "Clicked ‘Apply now’", url: "https://nukava.com/creators", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
+  { id: "a11", contact_id: "c4", visitor_id: "demo-jordan", source: "email", type: "email_click", title: "Clicked ‘Apply now’", url: "https://nukava.co/creators", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
   // Priya — replied and engaged on social.
   { id: "a12", contact_id: "c5", visitor_id: "demo-priya", source: "email", type: "email_reply", title: "Replied about a partnership", url: "", metadata: {}, occurred_at: tsFromNow(-2), created_at: now },
   { id: "a13", contact_id: "c5", visitor_id: "demo-priya", source: "email", type: "email_open", title: "Opened ‘Partnership ideas’", url: "", metadata: {}, occurred_at: tsFromNow(-4), created_at: now },
