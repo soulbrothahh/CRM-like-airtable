@@ -61,6 +61,7 @@ export const BOTTLE_STATUSES: BottleStatus[] = [
 export const INTERACTION_TYPES: InteractionType[] = [
   "Texted",
   "Called",
+  "Emailed",
   "DM'd",
   "Met in person",
   "Sent bottle",
