@@ -109,6 +109,30 @@ export default function DataPage() {
           {message && <p className="mt-3 text-sm text-taupe-600">{message}</p>}
         </Card>
 
+        <Card title="🤖 Agent access (MCP)">
+          <p className="mb-2 text-sm text-taupe-500">
+            AI agents (Claude Code, claude.ai) can work this CRM directly — triage
+            hot leads, log outreach, advance sequences, update deals — via the
+            built-in MCP server.
+          </p>
+          <ol className="mb-3 space-y-1 text-sm text-taupe-600">
+            <li>
+              1. In Vercel, set <code className="rounded bg-night-900/[0.05] px-1">MCP_API_KEY</code>{" "}
+              to a long random string (this is the agent password — keep it secret).
+            </li>
+            <li>2. Connect from Claude Code:</li>
+          </ol>
+          <pre className="overflow-x-auto rounded-xl bg-night-900 p-3 text-xs leading-relaxed text-cream-100">
+{`claude mcp add --transport http nukava \\
+  ${typeof window !== "undefined" ? window.location.origin : "https://nukava.vercel.app"}/api/mcp \\
+  --header "Authorization: Bearer YOUR_MCP_API_KEY"`}
+          </pre>
+          <p className="mt-2 text-xs text-taupe-400">
+            12 tools: overview, search/get/create/update contacts, log interactions
+            &amp; signals, follow-ups due, deals, sequences &amp; enrollment.
+          </p>
+        </Card>
+
         <Card title="CSV template">
           <p className="mb-2 text-sm text-taupe-500">
             A minimal CSV just needs a <span className="text-night-800">name</span> column.
