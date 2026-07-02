@@ -39,7 +39,8 @@ export function isStepDue(contact: Contact, seq: Sequence): boolean {
 function channelToType(channel: SequenceChannel): InteractionType {
   if (channel === "Call") return "Called";
   if (channel === "DM") return "DM'd";
-  return "Texted"; // Email / Text
+  if (channel === "Email") return "Emailed";
+  return "Texted";
 }
 
 export async function enrollInSequence(

@@ -9,6 +9,9 @@ import { PageHeader } from "@/components/PageHeader";
 import { OutreachStatusBadge } from "@/components/Badge";
 import { SequencesManager } from "@/components/SequencesManager";
 import { createInteraction } from "@/lib/data";
+import { listRecentActivities } from "@/lib/activities";
+import { getSupabase } from "@/lib/supabase";
+import { ACTIVITY_ICONS } from "@/lib/constants";
 import {
   advanceSequence,
   currentStep,
@@ -102,11 +105,15 @@ function Compose({
   const [recipientKey, setRecipientKey] = useState("");
   const [sender, setSender] = useState("");
   const [templateId, setTemplateId] = useState("");
+  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
   const [logged, setLogged] = useState("");
 
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
+  const [emailReady, setEmailReady] = useState<boolean | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [goal, setGoal] = useState("");
   const [generating, setGenerating] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -116,6 +123,10 @@ function Compose({
       .then((r) => r.json())
       .then((d) => setAiAvailable(Boolean(d.configured)))
       .catch(() => setAiAvailable(false));
+    fetch("/api/email/send")
+      .then((r) => r.json())
+      .then((d) => setEmailReady(Boolean(d.configured)))
+      .catch(() => setEmailReady(false));
   }, []);
 
   const templates = useMemo(
@@ -164,8 +175,8 @@ function Compose({
     setTemplateId(id);
     const t = OUTREACH_TEMPLATES.find((x) => x.id === id);
     if (!t) return;
-    const subject = t.subject ? `Subject: ${fillTemplate(t.subject, vars)}\n\n` : "";
-    setMessage(subject + fillTemplate(t.body, vars));
+    setSubject(t.subject ? fillTemplate(t.subject, vars) : "");
+    setMessage(fillTemplate(t.body, vars));
   }
 
   async function copy() {
@@ -181,7 +192,7 @@ function Compose({
   async function logSent() {
     if (!targetContact || !message.trim()) return;
     const interactionType: InteractionType =
-      channel === "Email" ? "Texted" : channel === "Text" ? "Texted" : "DM'd";
+      channel === "Email" ? "Emailed" : channel === "Text" ? "Texted" : "DM'd";
     await createInteraction({
       contact_id: targetContact.id,
       date: todayISO(),
@@ -198,6 +209,41 @@ function Compose({
     });
     setLogged(`Logged to ${targetContact.name} · follow-up set for ${formatDate(plusDays(3))}`);
     setTimeout(() => setLogged(""), 4000);
+  }
+
+  // Sends a real, tracked email (opens + clicks land on the contact's
+  // timeline). The API route logs the interaction + outreach side-effects.
+  async function sendEmail() {
+    if (!targetContact || !subject.trim() || !message.trim()) return;
+    setSending(true);
+    setSendError("");
+    try {
+      const sb = getSupabase();
+      const token = sb ? (await sb.auth.getSession()).data.session?.access_token : null;
+      if (!token) throw new Error("You need to be signed in (cloud mode) to send email.");
+      const res = await fetch("/api/email/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          contact_id: targetContact.id,
+          subject: subject.trim(),
+          body: message.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Send failed.");
+      setLogged(
+        `📤 Sent to ${data.to} · opens & clicks will be tracked · follow-up ${formatDate(data.follow_up)}`
+      );
+      setTimeout(() => setLogged(""), 6000);
+    } catch (e) {
+      setSendError((e as Error).message);
+    } finally {
+      setSending(false);
+    }
   }
 
   async function generateAI() {
@@ -350,8 +396,14 @@ function Compose({
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
+          <input
+            className="input mb-2"
+            placeholder="Subject (for email sends)"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
           <textarea
-            className="input min-h-[360px] flex-1 font-mono text-sm leading-relaxed"
+            className="input min-h-[330px] flex-1 font-mono text-sm leading-relaxed"
             placeholder="Pick a template or generate with AI — your message appears here, fully editable."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -361,18 +413,42 @@ function Compose({
             {targetContact ? (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs text-taupe-500">
-                  Sending to <span className="font-semibold text-night-800">{targetContact.name}</span>.
-                  Logging it records the message and sets a 3-day follow-up.
+                  {targetContact.email && emailReady
+                    ? `Send a tracked email to ${targetContact.name} — opens & clicks land on their timeline.`
+                    : `Sending to ${targetContact.name}. Logging records the message and sets a 3-day follow-up.`}
                 </p>
-                <button onClick={logSent} disabled={!message.trim()} className="btn-primary text-sm">
-                  ✓ Mark as sent
-                </button>
+                <div className="flex gap-2">
+                  {targetContact.email && emailReady && (
+                    <button
+                      onClick={sendEmail}
+                      disabled={sending || !subject.trim() || !message.trim()}
+                      className="btn-gold text-sm"
+                    >
+                      {sending ? "Sending…" : "📤 Send tracked email"}
+                    </button>
+                  )}
+                  <button onClick={logSent} disabled={!message.trim()} className="btn-primary text-sm">
+                    ✓ Mark as sent
+                  </button>
+                </div>
               </div>
             ) : (
               <p className="text-xs text-taupe-400">
                 Pick a contact above to log this message and track the reply.
               </p>
             )}
+            {targetContact && !targetContact.email && emailReady && (
+              <p className="mt-2 text-xs text-taupe-400">
+                Add an email address to {targetContact.name}&apos;s profile to send tracked emails.
+              </p>
+            )}
+            {emailReady === false && (
+              <p className="mt-2 text-xs text-taupe-400">
+                💡 Real email sending is off — set RESEND_API_KEY in Vercel to send tracked
+                emails from taylor@nukava.co.
+              </p>
+            )}
+            {sendError && <p className="mt-2 text-sm text-rose-600">{sendError}</p>}
             {logged && <p className="mt-2 text-sm font-medium text-sage-600">✓ {logged}</p>}
           </div>
         </div>
@@ -497,6 +573,8 @@ function Pipeline({
         </section>
       )}
 
+      <EmailEngagement contacts={contacts} />
+
       <PipeList
         title="🔔 Follow-ups due"
         hint="Overdue or due today"
@@ -528,6 +606,71 @@ function Pipeline({
         meta={() => ({ text: "" })}
       />
     </div>
+  );
+}
+
+// Live feed of email opens / clicks / replies — who's engaging right now.
+function EmailEngagement({ contacts }: { contacts: Contact[] }) {
+  const [events, setEvents] = useState<
+    { id: string; contact_id: string | null; type: string; title: string; occurred_at: string }[]
+  >([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    listRecentActivities(60)
+      .then((acts) => {
+        setEvents(
+          acts
+            .filter((a) => ["email_open", "email_click", "email_reply"].includes(a.type))
+            .slice(0, 12)
+        );
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, []);
+
+  if (!loaded || events.length === 0) return null;
+
+  const nameOf = (id: string | null) =>
+    contacts.find((c) => c.id === id)?.name ?? "Someone";
+
+  return (
+    <section>
+      <div className="mb-2 flex items-baseline justify-between">
+        <h2 className="text-base font-semibold">📬 Email engagement</h2>
+        <span className="text-xs text-taupe-400">Opens & clicks, most recent first</span>
+      </div>
+      <div className="card divide-y divide-night-900/10">
+        {events.map((a) => (
+          <div key={a.id} className="flex items-center gap-3 p-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-night-900/[0.04] text-base">
+              {ACTIVITY_ICONS[a.type as keyof typeof ACTIVITY_ICONS] ?? "📬"}
+            </span>
+            <div className="min-w-0 flex-1">
+              {a.contact_id ? (
+                <Link
+                  href={`/contacts/${a.contact_id}`}
+                  className="block truncate font-semibold hover:text-gold-600"
+                >
+                  {nameOf(a.contact_id)}
+                </Link>
+              ) : (
+                <span className="block truncate font-semibold">Someone</span>
+              )}
+              <div className="truncate text-xs text-taupe-400">{a.title}</div>
+            </div>
+            <span className="shrink-0 text-xs text-taupe-400">
+              {new Date(a.occurred_at).toLocaleString(undefined, {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

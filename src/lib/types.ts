@@ -48,6 +48,7 @@ export type BottleStatus =
 export type InteractionType =
   | "Texted"
   | "Called"
+  | "Emailed"
   | "DM'd"
   | "Met in person"
   | "Sent bottle"
