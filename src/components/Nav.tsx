@@ -7,12 +7,14 @@ import { useAuth } from "./AuthProvider";
 
 const LINKS = [
   { href: "/", label: "Better Moments", icon: "🏝️", short: "Home" },
+  { href: "/tasks", label: "Today", icon: "☑️", short: "Today" },
   { href: "/contacts", label: "Connections", icon: "👋", short: "People" },
   { href: "/events", label: "Events", icon: "🌺", short: "Events" },
   { href: "/deals", label: "Deals", icon: "🤝", short: "Deals" },
   { href: "/bottles", label: "Kava Giveaways", icon: "🌿", short: "Kava" },
   { href: "/outreach", label: "Warm Intros", icon: "✉️", short: "Intros" },
-  { href: "/tracking", label: "Website Tracking", icon: "📈", short: "Track" },
+  // Setup pages stay off the mobile bottom bar to keep it comfortable.
+  { href: "/tracking", label: "Website Tracking", icon: "📈", short: "Track", desktopOnly: true },
   { href: "/data", label: "Import / Export", icon: "⇄", short: "Data" },
 ];
 
@@ -52,7 +54,7 @@ export function BottomNav() {
   const pathname = usePathname();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-night-900/5 bg-cream-50/90 backdrop-blur md:hidden">
-      {LINKS.map((l) => {
+      {LINKS.filter((l) => !l.desktopOnly).map((l) => {
         const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
           <Link

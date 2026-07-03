@@ -6,6 +6,7 @@ import { DataProvider } from "@/components/DataProvider";
 import { DealsProvider } from "@/components/DealsProvider";
 import { EventsProvider } from "@/components/EventsProvider";
 import { SequencesProvider } from "@/components/SequencesProvider";
+import { TasksProvider } from "@/components/TasksProvider";
 import { BottomNav, Sidebar } from "@/components/Nav";
 import { QuickAdd } from "@/components/QuickAdd";
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <DealsProvider>
                 <EventsProvider>
                  <SequencesProvider>
+                 <TasksProvider>
                   <div className="flex min-h-screen">
                     <Sidebar />
                     <main className="w-full min-w-0 flex-1 overflow-x-hidden pb-24 md:pb-8">
@@ -57,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                   <QuickAdd />
                   <BottomNav />
+                 </TasksProvider>
                  </SequencesProvider>
                 </EventsProvider>
               </DealsProvider>
