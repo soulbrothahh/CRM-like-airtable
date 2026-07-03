@@ -249,6 +249,24 @@ export interface Sequence {
 
 export type NewSequence = Omit<Sequence, "id" | "created_at" | "updated_at">;
 
+// ---------------- Tasks ----------------
+// Lightweight to-dos, optionally linked to a contact or deal. The Today view
+// unifies these with follow-ups, sequence steps, and deal next-steps.
+
+export interface Task {
+  id: string;
+  title: string;
+  notes: string;
+  due_date: string | null; // YYYY-MM-DD
+  done: boolean;
+  contact_id: string | null;
+  deal_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type NewTask = Omit<Task, "id" | "created_at" | "updated_at">;
+
 // ---------------- Activities / signals (the unified timeline) ----------------
 // Every signal — web session, email open, form fill, social touch — becomes a
 // typed activity. Activities can be anonymous (visitor_id only) until a form

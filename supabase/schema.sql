@@ -137,6 +137,22 @@ create table if not exists public.sequences (
 
 create index if not exists contacts_sequence_id_idx on public.contacts(sequence_id);
 
+-- ---------- tasks (to-dos, optionally linked to a contact or deal) ----------
+create table if not exists public.tasks (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null default '',
+  notes       text not null default '',
+  due_date    date,
+  done        boolean not null default false,
+  contact_id  uuid references public.contacts(id) on delete cascade,
+  deal_id     uuid references public.deals(id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists tasks_due_date_idx on public.tasks(due_date);
+create index if not exists tasks_contact_id_idx on public.tasks(contact_id);
+
 -- ---------- activities (unified signal timeline: web, email, social) ----------
 create table if not exists public.activities (
   id          uuid primary key default gen_random_uuid(),
@@ -177,6 +193,7 @@ alter table public.deal_activities enable row level security;
 alter table public.events          enable row level security;
 alter table public.sequences       enable row level security;
 alter table public.activities      enable row level security;
+alter table public.tasks           enable row level security;
 
 drop policy if exists "anon full access contacts"      on public.contacts;
 drop policy if exists "anon full access interactions"  on public.interactions;
@@ -216,6 +233,11 @@ create policy "authed full access sequences"
 drop policy if exists "authed full access activities" on public.activities;
 create policy "authed full access activities"
   on public.activities for all to authenticated
+  using (true) with check (true);
+
+drop policy if exists "authed full access tasks" on public.tasks;
+create policy "authed full access tasks"
+  on public.tasks for all to authenticated
   using (true) with check (true);
 
 -- ============================================================
