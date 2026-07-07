@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// The Boardroom: every morning at 6 AM (Vercel Cron → /api/boardroom) a team of
+// The Boardroom: every morning at 9 AM Mountain (Vercel Cron → /api/boardroom) a team of
 // autonomous agents holds a board meeting over the live CRM data.
 //
 //   1. The CEO reviews yesterday's memory + today's numbers and sets objectives
@@ -266,7 +266,7 @@ function agentSystem(agent: AgentProfile): string {
   return (
     `You are ${agent.name}, the autonomous ${agent.title} agent on NuKava's AI board. ` +
     `Your mandate: ${agent.mandate} ${COMPANY_CONTEXT} ` +
-    "You sit in a daily 6 AM board meeting with the other agents. Be specific and " +
+    "You sit in a daily morning board meeting with the other agents. Be specific and " +
     "operational: name real contacts, deals and events from the data, never invent " +
     "records, and push for actions with revenue impact today. " +
     JSON_RULES
