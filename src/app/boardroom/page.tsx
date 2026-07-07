@@ -6,7 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getSupabase } from "@/lib/supabase";
 import { AGENTS, type AgentRole } from "@/lib/boardroomAgents";
 
-// The Boardroom — where the agent team's daily 6 AM meeting is published.
+// The Boardroom — where the agent team's daily 9 AM meeting is published.
 // Reads meetings/reports/memory straight from Supabase (RLS: signed-in users),
 // and can convene an extra meeting on demand via POST /api/boardroom.
 
@@ -129,7 +129,7 @@ export default function BoardroomPage() {
     <div>
       <PageHeader
         title="The Boardroom"
-        subtitle="Your agent team meets at 6 AM, every day"
+        subtitle="Your agent team meets at 9 AM, every day"
         action={
           cloudEnabled ? (
             <button onClick={convene} disabled={convening} className="btn-primary">
@@ -184,7 +184,7 @@ function SetupNotice() {
     <div className="card p-6">
       <h2 className="text-lg font-bold">☁️ The Boardroom needs cloud sync</h2>
       <p className="mt-2 text-sm text-taupe-600">
-        The agent team runs in the cloud so it can meet at 6 AM even while your phone is
+        The agent team runs in the cloud so it can meet at 9 AM even while your phone is
         off. To turn it on:
       </p>
       <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-taupe-600">
@@ -195,7 +195,7 @@ function SetupNotice() {
           <code className="rounded bg-night-900/5 px-1">CRON_SECRET</code> to your Vercel
           project.
         </li>
-        <li>Deploy — the 6 AM meeting is already scheduled in vercel.json.</li>
+        <li>Deploy — the 9 AM meeting is already scheduled in vercel.json.</li>
       </ol>
     </div>
   );
@@ -207,7 +207,7 @@ function EmptyState({ onConvene, convening }: { onConvene: () => void; convening
       <div className="text-4xl">🧠</div>
       <h2 className="mt-3 text-lg font-bold">No board meetings yet</h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-taupe-600">
-        Every morning at 6 AM your agent team — CEO, CMO, Sales, Researcher, Analyst and
+        Every morning at 9 AM your agent team — CEO, CMO, Sales, Researcher, Analyst and
         Developer — reviews the CRM, sets objectives, and turns them into tasks. Hold the
         first meeting now.
       </p>
