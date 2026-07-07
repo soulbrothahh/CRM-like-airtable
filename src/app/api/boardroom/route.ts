@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabaseAdmin";
 import { hasMeetingToday, runBoardMeeting } from "@/lib/boardroom";
 
-// The Boardroom: daily 6 AM agent board meeting.
+// The Boardroom: daily 9 AM agent board meeting.
 //   GET  — Vercel Cron (see vercel.json). Skips if today's meeting already ran.
 //          Manual testing: /api/boardroom?key=YOUR_CRON_SECRET
 //   POST — "Convene now" button in the Boardroom page (signed-in users).
