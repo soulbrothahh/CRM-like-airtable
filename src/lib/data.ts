@@ -1,7 +1,6 @@
 "use client";
 
 import { getSupabase, isCloudEnabled } from "./supabase";
-import { SEED_CONTACTS, SEED_INTERACTIONS } from "./seed";
 import type {
   Contact,
   Interaction,
@@ -41,12 +40,19 @@ function writeLocal<T>(key: string, value: T[]): void {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
+// The app used to seed 10 demo contacts on first run. Seeding is retired;
+// this now purges those demo rows (they used short ids like "c1"/"i2", while
+// real records get UUIDs) from browsers that were seeded before.
 function ensureSeeded(): void {
   if (typeof window === "undefined") return;
-  if (window.localStorage.getItem(SEEDED_KEY)) return;
-  writeLocal(CONTACTS_KEY, SEED_CONTACTS);
-  writeLocal(INTERACTIONS_KEY, SEED_INTERACTIONS);
-  window.localStorage.setItem(SEEDED_KEY, "1");
+  if (window.localStorage.getItem(SEEDED_KEY) === "purged") return;
+  const contacts = readLocal<Contact>(CONTACTS_KEY).filter((c) => !/^c\d+$/.test(c.id));
+  writeLocal(CONTACTS_KEY, contacts);
+  const interactions = readLocal<Interaction>(INTERACTIONS_KEY).filter(
+    (i) => !/^i\d+$/.test(i.id) && !/^c\d+$/.test(i.contact_id)
+  );
+  writeLocal(INTERACTIONS_KEY, interactions);
+  window.localStorage.setItem(SEEDED_KEY, "purged");
 }
 
 // ---------- Public API ----------

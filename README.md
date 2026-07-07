@@ -40,8 +40,8 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:3000**. That's it — the app starts in **on-device mode** with
-10 sample NuKava contacts so you can play with everything immediately. No accounts,
+Open **http://localhost:3000**. That’s it — the app starts in **on-device mode**, empty
+and ready for your first contact. No accounts,
 no cloud, no setup.
 
 > In on-device mode your data is stored privately in that browser. To move it to
@@ -56,7 +56,7 @@ This is optional but recommended — it's free and gives you the same data on ev
 1. Create a free account at **[supabase.com](https://supabase.com)** and make a new project.
 2. In the project, open the **SQL Editor**, paste the entire contents of
    [`supabase/schema.sql`](./supabase/schema.sql), and click **Run**.
-   This creates the `contacts` and `interactions` tables and adds the sample data.
+   This creates the `contacts` and `interactions` tables (no sample data — you start clean).
 3. In Supabase, go to **Project Settings → API** and copy:
    - **Project URL**
    - **anon public** key
@@ -244,7 +244,6 @@ src/
     supabase.ts           Supabase client
     csv.ts                CSV parse/export + JSON backup
     views.ts              Saved-view definitions + search
-    seed.ts               Sample contacts (on-device mode)
     helpers.ts            Dates, formatting, small utilities
 supabase/schema.sql       Database schema + seed (paste into Supabase)
 vercel.json               Daily cron schedule for reminder emails
