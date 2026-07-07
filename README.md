@@ -26,6 +26,7 @@ phone as an app (PWA), with **CSV import/export** and **JSON backups**.
 - **Import / Export** — import creator-list CSVs (smart header matching), export CSV, and download full JSON backups.
 - **Private login** — when cloud sync is on, the app is protected behind an email/password account (on-device mode stays login-free).
 - **Daily reminder emails** (optional) — a once-a-day digest of due follow-ups, ready-to-ship bottles and missing addresses, sent via a scheduled job.
+- **🧠 The Boardroom** (optional) — every morning at 6 AM an autonomous agent team (CEO, CMO, Sales, Researcher, Analyst, Developer) holds a board meeting over your live CRM data, sets objectives, writes to a shared memory, and turns the best moves into tasks in your Today view.
 - **Installable PWA** — add it to your iPhone/Android home screen and it opens like a native app.
 
 ---
@@ -138,6 +139,37 @@ daily schedule for you — see [`vercel.json`](./vercel.json)).
    Change the time by editing the `schedule` in `vercel.json` ([cron syntax](https://crontab.guru)).
 4. **Test it now:** visit `https://YOUR-APP.vercel.app/api/reminders?key=YOUR_CRON_SECRET`.
    You'll get a JSON result and (if anything is due) an email. Empty days send nothing.
+
+---
+
+## 🧠 The Boardroom — your 6 AM agent board meeting (optional)
+
+Every morning at **6 AM**, an autonomous agent team holds a board meeting over your live
+CRM data — a digital assembly line for growth:
+
+- **Ava (CEO)** reviews yesterday's progress + shared memory and sets today's objectives
+  across **content, leads, sales, operations and bottlenecks**, then delegates.
+- **Marlow (CMO)** plans content & creator activations · **Rex (Sales)** works the lead
+  pipeline and follow-ups · **Iris (Researcher)** gathers market/competitor context ·
+  **Dot (Analyst)** ranks everything by revenue impact · **Kit (Developer)** flags data
+  hygiene and workflow bottlenecks.
+- The agents **share memory** (`agent_memory` table) — every meeting reads what past
+  meetings learned and adds to it, so the system compounds daily.
+- The best action items become **real tasks** in your Today view, and the whole meeting
+  (objectives, per-agent reports, closing synthesis) is published to **The Boardroom** tab.
+
+To turn it on (requires cloud sync + a Vercel deployment):
+
+1. Run [`supabase/migrations/2026-07-06-add-boardroom.sql`](./supabase/migrations/2026-07-06-add-boardroom.sql)
+   in the Supabase SQL Editor (new projects get it from `schema.sql` automatically).
+2. Make sure these Vercel environment variables are set: `ANTHROPIC_API_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY`, and `CRON_SECRET` (all described above). Optionally set
+   `BOARDROOM_MODEL` to override the default model (`claude-sonnet-5`).
+3. **Redeploy.** Vercel convenes the meeting daily at **12:00 UTC** (6 AM Mountain in
+   summer) — change the `/api/boardroom` `schedule` in [`vercel.json`](./vercel.json) to taste.
+4. **Test it now:** open the **🧠 The Boardroom** tab and hit **Convene now**, or visit
+   `https://YOUR-APP.vercel.app/api/boardroom?key=YOUR_CRON_SECRET`. A meeting takes
+   ~1–2 minutes and costs a handful of model calls.
 
 ---
 
