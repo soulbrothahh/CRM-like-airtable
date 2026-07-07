@@ -1,7 +1,6 @@
 "use client";
 
 import { getSupabase } from "./supabase";
-import { SEED_ACTIVITIES } from "./seed";
 import type { Activity, NewActivity } from "./types";
 
 const ACTIVITIES_KEY = "nukava_activities_v1";
@@ -29,11 +28,13 @@ function writeLocal(value: Activity[]): void {
   window.localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(value));
 }
 
+// Demo-activity seeding is retired; purge previously seeded rows (short ids
+// like "a1" — real records get UUIDs) from browsers that were seeded before.
 function ensureSeeded(): void {
   if (typeof window === "undefined") return;
-  if (window.localStorage.getItem(ACTIVITIES_SEEDED_KEY)) return;
-  writeLocal(SEED_ACTIVITIES);
-  window.localStorage.setItem(ACTIVITIES_SEEDED_KEY, "1");
+  if (window.localStorage.getItem(ACTIVITIES_SEEDED_KEY) === "purged") return;
+  writeLocal(readLocal().filter((a) => !/^a\d+$/.test(a.id) && !/^c\d+$/.test(a.contact_id ?? "")));
+  window.localStorage.setItem(ACTIVITIES_SEEDED_KEY, "purged");
 }
 
 export async function listActivities(contactId: string): Promise<Activity[]> {
