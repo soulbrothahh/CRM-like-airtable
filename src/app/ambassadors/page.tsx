@@ -100,7 +100,9 @@ export default function AmbassadorsPage() {
   const totals = useMemo(() => {
     const revenue = roster.reduce((s, a) => s + (Number(a.total_revenue) || 0), 0);
     const commission = roster.reduce((s, a) => s + (Number(a.total_commission) || 0), 0);
-    const approved = roster.filter((a) => a.uppromote_status === "approved").length;
+    const approved = roster.filter(
+      (a) => a.uppromote_status === "active" || a.uppromote_status === "approved"
+    ).length;
     return { revenue, commission, approved };
   }, [roster]);
 
@@ -167,7 +169,7 @@ export default function AmbassadorsPage() {
         {/* Stat strip */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Ambassadors" value={String(roster.length)} />
-          <Stat label="Approved" value={String(totals.approved)} />
+          <Stat label="Active" value={String(totals.approved)} />
           <Stat label="Attributed revenue" value={`$${totals.revenue.toFixed(2)}`} />
           <Stat label="Commission owed" value={`$${totals.commission.toFixed(2)}`} />
         </div>
@@ -339,7 +341,7 @@ function TierChip({ tier }: { tier: string }) {
 
 function StatusChip({ status }: { status: string }) {
   const cls =
-    status === "approved"
+    status === "active" || status === "approved"
       ? "bg-sage-500/10 text-sage-600 ring-sage-500/20"
       : status === "pending"
         ? "bg-gold-400/15 text-gold-700 ring-gold-400/20"
