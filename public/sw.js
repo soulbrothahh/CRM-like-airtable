@@ -1,8 +1,9 @@
 // Minimal service worker for NuKava CRM — enables installability and a basic
 // offline app shell. App data is handled by Supabase / localStorage, not here.
-const CACHE = "nukava-shell-v4";
+const CACHE = "nukava-shell-v5";
 const SHELL = [
   "/",
+  "/ambassadors",
   "/boardroom",
   "/tasks",
   "/contacts",
