@@ -225,18 +225,37 @@ async function askAgent<T>(
   system: string,
   prompt: string
 ): Promise<T> {
-  const response = await client.messages.create({
-    model,
-    max_tokens: 1500,
-    system,
-    messages: [{ role: "user", content: prompt }],
-  });
-  const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("")
-    .trim();
-  return extractJson<T>(text);
+  // Two attempts: long reports used to truncate mid-JSON at low max_tokens
+  // ("Expected ',' or ']' after array element"), so give generous room and,
+  // if the JSON still fails to parse, ask once more for a tighter response.
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await client.messages.create({
+      model,
+      max_tokens: 4000,
+      system,
+      messages: [
+        {
+          role: "user",
+          content:
+            attempt === 0
+              ? prompt
+              : `${prompt}\n\nIMPORTANT: your previous reply was not valid JSON (it may have been cut off). Reply again with the COMPLETE JSON object only, and keep every string value brief so nothing truncates.`,
+        },
+      ],
+    });
+    const text = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("")
+      .trim();
+    try {
+      return extractJson<T>(text);
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw lastError ?? new Error("Agent returned no JSON object.");
 }
 
 // ---------------- meeting phases ----------------
