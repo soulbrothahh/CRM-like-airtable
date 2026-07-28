@@ -22,6 +22,7 @@ export default function AmbassadorsPage() {
   const { session, cloudEnabled, ready } = useAuth();
   const [status, setStatus] = useState<SyncStatus | null>(null);
   const [roster, setRoster] = useState<Ambassador[]>([]);
+  const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<"" | "dry" | "sync">("");
   const [message, setMessage] = useState("");
 
@@ -97,6 +98,17 @@ export default function AmbassadorsPage() {
     [token, status, loadAll]
   );
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return roster;
+    return roster.filter((a) =>
+      [`${a.first_name} ${a.last_name}`, a.email, a.instagram, a.tiktok, a.program_name, a.tier, a.lifecycle]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [roster, search]);
+
   const totals = useMemo(() => {
     const revenue = roster.reduce((s, a) => s + (Number(a.total_revenue) || 0), 0);
     const commission = roster.reduce((s, a) => s + (Number(a.total_commission) || 0), 0);
@@ -166,6 +178,13 @@ export default function AmbassadorsPage() {
           </Card>
         )}
 
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search ambassadors — name, email, handle, tier…"
+          className="input w-full"
+        />
+
         {/* Stat strip */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Ambassadors" value={String(roster.length)} />
@@ -175,9 +194,11 @@ export default function AmbassadorsPage() {
         </div>
 
         {/* Roster */}
-        {roster.length === 0 ? (
+        {filtered.length === 0 ? (
           <Card>
-            <p className="text-sm font-semibold">No ambassadors synced yet</p>
+            <p className="text-sm font-semibold">
+              {roster.length > 0 ? `No matches for “${search}”` : "No ambassadors synced yet"}
+            </p>
             <p className="mt-1 text-sm text-taupe-600">
               Once UpPromote is connected, &ldquo;Sync now&rdquo; imports every affiliate with
               their links, coupons, referral sales, and payouts — and links each one to their
@@ -192,7 +213,7 @@ export default function AmbassadorsPage() {
           <>
             {/* Mobile cards */}
             <div className="space-y-2 md:hidden">
-              {roster.map((a) => (
+              {filtered.map((a) => (
                 <AmbassadorCard key={a.id} a={a} />
               ))}
             </div>
@@ -212,7 +233,7 @@ export default function AmbassadorsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {roster.map((a) => (
+                  {filtered.map((a) => (
                     <tr key={a.id} className="border-b border-night-900/5 last:border-0">
                       <td className="px-4 py-3">
                         <NameCell a={a} />
