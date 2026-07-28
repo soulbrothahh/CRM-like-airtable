@@ -313,15 +313,18 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function NameCell({ a }: { a: Ambassador }) {
   const name = `${a.first_name} ${a.last_name}`.trim() || a.email || "—";
-  return a.contact_id ? (
+  return (
     <Link
-      href={`/contacts/${a.contact_id}`}
+      href={`/ambassadors/${a.id}`}
       className="font-semibold text-night-800 hover:text-gold-600"
     >
       {name}
+      {a.contact_id && (
+        <span className="ml-1.5 align-middle text-[10px] font-bold text-sage-600" title="Linked to a CRM contact">
+          ●
+        </span>
+      )}
     </Link>
-  ) : (
-    <span className="font-semibold text-night-800">{name}</span>
   );
 }
 
