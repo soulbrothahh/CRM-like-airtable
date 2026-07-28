@@ -7,15 +7,17 @@ import { useAuth } from "./AuthProvider";
 
 const LINKS = [
   { href: "/", label: "Better Moments", icon: "🏝️", short: "Home" },
+  { href: "/boardroom", label: "The Boardroom", icon: "🧠", short: "Board" },
   { href: "/tasks", label: "Today", icon: "☑️", short: "Today" },
   { href: "/contacts", label: "Connections", icon: "👋", short: "People" },
   { href: "/events", label: "Events", icon: "🌺", short: "Events" },
   { href: "/deals", label: "Deals", icon: "🤝", short: "Deals" },
   { href: "/bottles", label: "Kava Giveaways", icon: "🌿", short: "Kava" },
+  { href: "/ambassadors", label: "Ambassadors", icon: "🏆", short: "Amb." },
   { href: "/outreach", label: "Warm Intros", icon: "✉️", short: "Intros" },
   // Setup pages stay off the mobile bottom bar to keep it comfortable.
   { href: "/tracking", label: "Website Tracking", icon: "📈", short: "Track", desktopOnly: true },
-  { href: "/data", label: "Import / Export", icon: "⇄", short: "Data" },
+  { href: "/data", label: "Import / Export", icon: "⇄", short: "Data", desktopOnly: true },
 ];
 
 export function Sidebar() {

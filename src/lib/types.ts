@@ -301,3 +301,180 @@ export interface Activity {
 }
 
 export type NewActivity = Omit<Activity, "id" | "created_at">;
+
+// ---------------- Growth OS: ambassadors (UpPromote mirror) ----------------
+// UpPromote owns affiliate status, links, coupons, referral sales, commission
+// math, and payouts; the CRM owns lifecycle, tier, notes, and everything
+// relationship-side. The two status fields are deliberately separate.
+
+export type AmbassadorLifecycle =
+  | "Prospect"
+  | "Contacted"
+  | "Invited"
+  | "Applied"
+  | "Approved"
+  | "Onboarding"
+  | "Activated"
+  | "At risk"
+  | "Inactive"
+  | "Declined";
+
+export type AmbassadorTier = "Ambassador" | "Islander" | "Founding Circle";
+
+export interface Ambassador {
+  id: string;
+  contact_id: string | null; // link to the canonical person record
+  uppromote_id: number | null; // external id; primary match key
+  email: string;
+  first_name: string;
+  last_name: string;
+  uppromote_status: string; // theirs: pending / approved / inactive …
+  lifecycle: AmbassadorLifecycle; // ours
+  tier: AmbassadorTier; // ours
+  program_id: number | null;
+  program_name: string;
+  referral_link: string;
+  facebook: string;
+  instagram: string;
+  tiktok: string;
+  website: string;
+  email_verified: boolean | null;
+  w9_on_file: boolean | null; // status only; the document is never stored
+  upline_uppromote_id: number | null;
+  total_referrals: number;
+  total_revenue: number;
+  total_commission: number;
+  unpaid_commission: number;
+  first_sale_at: string | null;
+  last_sale_at: string | null;
+  uppromote_created_at: string | null;
+  last_synced_at: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AmbassadorCoupon {
+  id: string;
+  ambassador_id: string;
+  code: string;
+  discount: string;
+  uppromote_coupon_id: number | null;
+  created_at: string;
+}
+
+export interface Referral {
+  id: string;
+  uppromote_referral_id: number | null;
+  ambassador_id: string | null;
+  uppromote_affiliate_id: number | null;
+  order_id: string;
+  order_number: string;
+  tracking_type: string;
+  coupon_code: string;
+  status: string;
+  revenue: number;
+  commission: number;
+  adjustment: number;
+  occurred_at: string | null;
+  synced_at: string;
+  created_at: string;
+}
+
+export interface Payout {
+  id: string;
+  uppromote_payment_id: number | null;
+  ambassador_id: string | null;
+  uppromote_affiliate_id: number | null;
+  amount: number;
+  status: string;
+  method: string;
+  paid_at: string | null;
+  synced_at: string;
+  created_at: string;
+}
+
+// ---------------- Growth OS: campaigns & sampling ----------------
+
+export type CampaignChannel =
+  | "Shopify"
+  | "TikTok Shop"
+  | "DTC"
+  | "Retail"
+  | "Wholesale"
+  | "Custom";
+
+export type CampaignStatus = "Planned" | "Active" | "Paused" | "Complete";
+
+export interface Campaign {
+  id: string;
+  name: string;
+  channel: CampaignChannel;
+  status: CampaignStatus;
+  start_date: string | null;
+  end_date: string | null;
+  goal: string;
+  budget: number | null;
+  bottles_allocated: number | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SampleShipmentStatus =
+  | "Planned"
+  | "Ready"
+  | "Shipped"
+  | "Delivered"
+  | "Followed up";
+
+export interface SampleShipment {
+  id: string;
+  contact_id: string;
+  campaign_id: string | null;
+  quantity: number;
+  status: SampleShipmentStatus;
+  shipping_name: string;
+  shipping_address: string;
+  tracking_number: string;
+  cost: number | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  content_received: boolean;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContentPost {
+  id: string;
+  contact_id: string;
+  campaign_id: string | null;
+  platform: string;
+  url: string;
+  posted_at: string | null;
+  approval_status: "Pending" | "Approved" | "Needs changes";
+  usage_rights: boolean;
+  ftc_disclosed: boolean | null;
+  claims_checked: boolean | null;
+  rating: number | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ---------------- Growth OS: integration plumbing ----------------
+
+export interface SyncRun {
+  id: string;
+  provider: string;
+  kind: "backfill" | "webhook" | "reconcile";
+  dry_run: boolean;
+  status: "running" | "success" | "partial" | "error";
+  started_at: string;
+  finished_at: string | null;
+  counts: Record<string, number>;
+  errors: string[];
+  cursor: Record<string, unknown>;
+  created_at: string;
+}
