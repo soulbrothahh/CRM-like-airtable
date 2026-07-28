@@ -11,7 +11,17 @@ import type {
   AmbassadorLifecycle,
   AmbassadorTier,
   Payout,
+  SampleShipment,
+  SampleShipmentStatus,
 } from "@/lib/types";
+
+const SHIPMENT_STATUSES: SampleShipmentStatus[] = [
+  "Planned",
+  "Ready",
+  "Shipped",
+  "Delivered",
+  "Followed up",
+];
 
 // Ambassador detail: UpPromote-owned facts (status, link, coupons, money)
 // plus the CRM-owned relationship side (tier, lifecycle, notes, contact link).
@@ -35,6 +45,8 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
   const [amb, setAmb] = useState<Ambassador | null>(null);
   const [coupons, setCoupons] = useState<AmbassadorCoupon[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [shipments, setShipments] = useState<SampleShipment[]>([]);
+  const [newQty, setNewQty] = useState(1);
   const [contactName, setContactName] = useState("");
   const [notesDraft, setNotesDraft] = useState("");
   const [saved, setSaved] = useState("");
@@ -59,6 +71,12 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
     if (a.contact_id) {
       const { data: c } = await sb.from("contacts").select("name").eq("id", a.contact_id).maybeSingle();
       setContactName((c?.name as string) ?? "");
+      const { data: ships } = await sb
+        .from("sample_shipments")
+        .select("*")
+        .eq("contact_id", a.contact_id)
+        .order("created_at", { ascending: false });
+      setShipments((ships as SampleShipment[]) ?? []);
     }
   }, [params.id]);
 
@@ -143,6 +161,34 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
     }
     setBusy(false);
   }, [amb, coupons, update]);
+
+  const addShipment = useCallback(async () => {
+    const sb = getSupabase();
+    if (!sb || !amb?.contact_id) return;
+    const { data, error } = await sb
+      .from("sample_shipments")
+      .insert({ contact_id: amb.contact_id, quantity: Math.max(1, newQty), status: "Planned" })
+      .select("*")
+      .single();
+    if (!error && data) {
+      setShipments((prev) => [data as SampleShipment, ...prev]);
+      setNewQty(1);
+      setSaved("Shipment planned");
+      setTimeout(() => setSaved(""), 2000);
+    }
+  }, [amb, newQty]);
+
+  const updateShipment = useCallback(async (id: string, patch: Partial<SampleShipment>) => {
+    const sb = getSupabase();
+    if (!sb) return;
+    const stamps: Partial<SampleShipment> = { ...patch, updated_at: new Date().toISOString() };
+    if (patch.status === "Shipped") stamps.shipped_at = new Date().toISOString().slice(0, 10);
+    if (patch.status === "Delivered") stamps.delivered_at = new Date().toISOString().slice(0, 10);
+    const { error } = await sb.from("sample_shipments").update(stamps).eq("id", id);
+    if (!error) {
+      setShipments((prev) => prev.map((sh) => (sh.id === id ? { ...sh, ...stamps } : sh)));
+    }
+  }, []);
 
   if (!amb) {
     return (
@@ -330,6 +376,77 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
                 {busy ? "Working…" : `＋ Create contact for ${name}`}
               </button>
             </div>
+          )}
+        </section>
+
+        {/* Gifting */}
+        <section className="rounded-2xl bg-cream-50 p-4 ring-1 ring-night-900/5">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-taupe-500">
+            Bottles &amp; gifting
+          </h2>
+          {!amb.contact_id ? (
+            <p className="mt-2 text-sm text-taupe-600">
+              Link or create their CRM contact above first — every bottle ships against a contact
+              so the attribution trail stays intact.
+            </p>
+          ) : (
+            <>
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  value={newQty}
+                  onChange={(e) => setNewQty(Number(e.target.value) || 1)}
+                  className="input w-20"
+                  aria-label="Bottles to send"
+                />
+                <button
+                  onClick={() => void addShipment()}
+                  className="btn-gold rounded-xl px-3 py-2 text-xs font-semibold"
+                >
+                  ＋ Plan shipment
+                </button>
+              </div>
+              {shipments.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                  {shipments.map((sh) => (
+                    <li
+                      key={sh.id}
+                      className="flex flex-wrap items-center gap-2 rounded-xl bg-cream-100 px-3 py-2 ring-1 ring-night-900/5"
+                    >
+                      <span className="text-sm font-semibold tabular-nums">
+                        {sh.quantity} bottle{sh.quantity === 1 ? "" : "s"}
+                      </span>
+                      <select
+                        value={sh.status}
+                        onChange={(e) =>
+                          void updateShipment(sh.id, {
+                            status: e.target.value as SampleShipmentStatus,
+                          })
+                        }
+                        className="input px-2 py-1 text-xs"
+                      >
+                        {SHIPMENT_STATUSES.map((st) => (
+                          <option key={st}>{st}</option>
+                        ))}
+                      </select>
+                      <input
+                        defaultValue={sh.tracking_number}
+                        placeholder="Tracking #"
+                        onBlur={(e) => {
+                          if (e.target.value !== sh.tracking_number)
+                            void updateShipment(sh.id, { tracking_number: e.target.value });
+                        }}
+                        className="input min-w-0 flex-1 px-2 py-1 text-xs"
+                      />
+                      <span className="text-xs text-taupe-400">
+                        {sh.delivered_at || sh.shipped_at || sh.created_at.slice(0, 10)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </section>
 
