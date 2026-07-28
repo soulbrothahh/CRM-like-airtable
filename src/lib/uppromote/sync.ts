@@ -13,7 +13,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { upGetAll, uppromoteConfigured } from "./client";
-import { mapAffiliate, mapCoupon, mapPayment, mapReferral } from "./map";
+import { affiliateCoupons, mapAffiliate, mapCoupon, mapPayment, mapReferral, num } from "./map";
 import {
   FIXTURE_AFFILIATES,
   FIXTURE_COUPONS,
@@ -71,7 +71,7 @@ export async function runBackfill(sb: Sb, opts: BackfillOptions): Promise<Backfi
       : [
           await fetchCollection("/affiliates", true),
           await fetchCollection("/referrals", false),
-          await fetchCollection("/payments", false),
+          await fetchCollection("/payments/paid", false), // v2 has no /payments list
           await fetchCollection("/coupons", false),
         ];
     counts.affiliates_fetched = affRows.length;
@@ -160,17 +160,42 @@ export async function runBackfill(sb: Sb, opts: BackfillOptions): Promise<Backfi
       if (error) throw new Error(`payouts upsert: ${error.message}`);
     }
 
-    // ---- 5. Coupons ----
-    const coupons = couponRows
-      .map(mapCoupon)
-      .filter((c) => c.code !== "" && c.uppromote_affiliate_id !== null)
-      .map((c) => ({
-        ambassador_id: idMap.get(c.uppromote_affiliate_id as number) ?? null,
+    // ---- 5. Coupons — from the /coupons endpoint (has discount values) plus
+    // the code strings that ride on each affiliate record.
+    const couponByKey = new Map<string, {
+      ambassador_id: string | null;
+      code: string;
+      discount: string;
+      uppromote_coupon_id: number | null;
+    }>();
+    for (const c of couponRows.map(mapCoupon)) {
+      if (c.code === "" || c.uppromote_affiliate_id === null) continue;
+      const ambassadorId = idMap.get(c.uppromote_affiliate_id) ?? null;
+      if (ambassadorId === null) continue;
+      couponByKey.set(`${ambassadorId}:${c.code}`, {
+        ambassador_id: ambassadorId,
         code: c.code,
         discount: c.discount,
         uppromote_coupon_id: c.uppromote_coupon_id,
-      }))
-      .filter((c) => c.ambassador_id !== null);
+      });
+    }
+    for (const row of affRows) {
+      const upId = num(row, ["id", "affiliate_id"]);
+      const ambassadorId = upId !== null ? idMap.get(upId) ?? null : null;
+      if (ambassadorId === null) continue;
+      for (const code of affiliateCoupons(row)) {
+        const key = `${ambassadorId}:${code}`;
+        if (!couponByKey.has(key)) {
+          couponByKey.set(key, {
+            ambassador_id: ambassadorId,
+            code,
+            discount: "",
+            uppromote_coupon_id: null,
+          });
+        }
+      }
+    }
+    const coupons = Array.from(couponByKey.values());
     counts.coupons_upserted = coupons.length;
     if (!dryRun && coupons.length > 0) {
       const { error } = await sb
@@ -262,23 +287,22 @@ async function linkContacts(sb: Sb): Promise<{ linked: number; queued: number }>
   return { linked, queued };
 }
 
+// Referral-derived rollups only: sale counts, revenue, first/last sale dates.
+// Commission totals are NOT touched here — the affiliate record's
+// paid/approved/pending amounts are authoritative and land in the upsert.
 async function recomputeRollups(sb: Sb, ambassadorIds: string[]): Promise<number> {
   if (ambassadorIds.length === 0) return 0;
   const { data: refs } = await sb
     .from("referrals")
-    .select("ambassador_id, status, revenue, commission, occurred_at")
-    .in("ambassador_id", ambassadorIds);
-  const { data: pays } = await sb
-    .from("payouts")
-    .select("ambassador_id, status, amount")
+    .select("ambassador_id, status, revenue, occurred_at")
     .in("ambassador_id", ambassadorIds);
 
   const agg = new Map<
     string,
-    { n: number; revenue: number; commission: number; paid: number; first: string | null; last: string | null }
+    { n: number; revenue: number; first: string | null; last: string | null }
   >();
   for (const id of ambassadorIds) {
-    agg.set(id, { n: 0, revenue: 0, commission: 0, paid: 0, first: null, last: null });
+    agg.set(id, { n: 0, revenue: 0, first: null, last: null });
   }
   for (const r of refs ?? []) {
     const a = agg.get(r.ambassador_id as string);
@@ -287,17 +311,11 @@ async function recomputeRollups(sb: Sb, ambassadorIds: string[]): Promise<number
     if (status === "denied" || status === "rejected") continue;
     a.n += 1;
     a.revenue += Number(r.revenue) || 0;
-    a.commission += Number(r.commission) || 0;
     const at = r.occurred_at ? String(r.occurred_at) : null;
     if (at) {
       if (!a.first || at < a.first) a.first = at;
       if (!a.last || at > a.last) a.last = at;
     }
-  }
-  for (const p of pays ?? []) {
-    const a = agg.get(p.ambassador_id as string);
-    if (!a) continue;
-    if (String(p.status) === "paid") a.paid += Number(p.amount) || 0;
   }
 
   let updated = 0;
@@ -307,8 +325,6 @@ async function recomputeRollups(sb: Sb, ambassadorIds: string[]): Promise<number
       .update({
         total_referrals: a.n,
         total_revenue: a.revenue,
-        total_commission: a.commission,
-        unpaid_commission: Math.max(0, a.commission - a.paid),
         first_sale_at: a.first,
         last_sale_at: a.last,
       })

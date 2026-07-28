@@ -50,7 +50,13 @@ export function iso(row: Row, keys: string[]): string | null {
   return isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-/** UpPromote affiliate row → ambassadors upsert payload (CRM-owned fields excluded). */
+/**
+ * UpPromote affiliate row → ambassadors upsert payload (CRM-owned fields
+ * excluded). Field names confirmed against the live v2 GET /affiliates schema.
+ * The affiliate record carries authoritative money rollups
+ * (paid/approved/pending_amount), so commission totals come from here — the
+ * referral mirror only derives sale counts/dates.
+ */
 export function mapAffiliate(row: Row): {
   uppromote_id: number | null;
   email: string;
@@ -65,26 +71,43 @@ export function mapAffiliate(row: Row): {
   tiktok: string;
   website: string;
   email_verified: boolean | null;
+  w9_on_file: boolean;
   upline_uppromote_id: number | null;
+  total_commission: number;
+  unpaid_commission: number;
   uppromote_created_at: string | null;
 } {
+  const paid = num(row, ["paid_amount"]) ?? 0;
+  const approved = num(row, ["approved_amount"]) ?? 0;
+  const pending = num(row, ["pending_amount"]) ?? 0;
   return {
     uppromote_id: num(row, ["id", "affiliate_id"]),
     email: str(row, ["email"]).toLowerCase(),
     first_name: str(row, ["first_name", "firstname"]),
     last_name: str(row, ["last_name", "lastname"]),
-    uppromote_status: str(row, ["status", "affiliate_status", "state"]),
+    uppromote_status: str(row, ["status", "affiliate_status"]),
     program_id: num(row, ["program_id"]),
     program_name: str(row, ["program_name", "program"]),
-    referral_link: str(row, ["affiliate_link", "referral_link", "default_link", "link"]),
+    referral_link: str(row, ["default_affiliate_link", "custom_affiliate_link", "affiliate_link", "referral_link"]),
     facebook: str(row, ["facebook"]),
     instagram: str(row, ["instagram"]),
     tiktok: str(row, ["tiktok"]),
     website: str(row, ["website"]),
     email_verified: bool(row, ["email_verified", "is_email_verified"]),
-    upline_uppromote_id: num(row, ["parent_id", "upline_id", "referred_by"]),
-    uppromote_created_at: iso(row, ["created_at", "created_at_timestamp", "signup_date"]),
+    // Presence only — the W-9 URL itself is sensitive and never stored.
+    w9_on_file: str(row, ["w9_form"]) !== "",
+    upline_uppromote_id: num(row, ["up_line_affiliate_id", "parent_id", "upline_id"]),
+    total_commission: paid + approved + pending,
+    unpaid_commission: approved + pending,
+    uppromote_created_at: iso(row, ["created_at", "signup_date"]),
   };
+}
+
+/** Coupon code strings that ride directly on the affiliate record. */
+export function affiliateCoupons(row: Row): string[] {
+  const v = row.coupons;
+  if (!Array.isArray(v)) return [];
+  return v.map((c) => (typeof c === "string" ? c : String(c))).filter((c) => c !== "");
 }
 
 /** UpPromote referral row → referrals upsert payload. */
@@ -114,7 +137,11 @@ export function mapReferral(row: Row): {
   };
 }
 
-/** UpPromote payment row → payouts upsert payload. */
+/**
+ * UpPromote paid-payment history row (GET /payments/paid) → payouts upsert.
+ * Confirmed fields: payment_id, affiliate_id, status (e.g. SUCCESS),
+ * total_processed, payment_method, processed_at.
+ */
 export function mapPayment(row: Row): {
   uppromote_payment_id: number | null;
   uppromote_affiliate_id: number | null;
@@ -124,12 +151,12 @@ export function mapPayment(row: Row): {
   paid_at: string | null;
 } {
   return {
-    uppromote_payment_id: num(row, ["id", "payment_id"]),
+    uppromote_payment_id: num(row, ["payment_id", "id"]),
     uppromote_affiliate_id: num(row, ["affiliate_id"]),
-    amount: num(row, ["amount", "total", "value"]) ?? 0,
+    amount: num(row, ["total_processed", "amount", "total"]) ?? 0,
     status: str(row, ["status", "payment_status"]).toLowerCase(),
-    method: str(row, ["method", "payment_method"]),
-    paid_at: iso(row, ["paid_at", "payment_date", "created_at"]),
+    method: str(row, ["payment_method", "method"]),
+    paid_at: iso(row, ["processed_at", "paid_at", "created_at"]),
   };
 }
 
