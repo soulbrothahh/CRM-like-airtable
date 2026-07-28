@@ -187,8 +187,23 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
     const { error } = await sb.from("sample_shipments").update(stamps).eq("id", id);
     if (!error) {
       setShipments((prev) => prev.map((sh) => (sh.id === id ? { ...sh, ...stamps } : sh)));
+      // Delivered bottles start the content clock: drop a follow-up task on
+      // the Today view so nobody's free bottle goes quiet.
+      if (patch.status === "Delivered" && amb?.contact_id) {
+        const due = new Date();
+        due.setDate(due.getDate() + 3);
+        const who = `${amb.first_name} ${amb.last_name}`.trim() || amb.email;
+        await sb.from("tasks").insert({
+          title: `Follow up with ${who} — bottles delivered, content posted?`,
+          notes: "Free ambassador bottle delivered. Check in, ask how they like it, nudge the first post.",
+          due_date: due.toISOString().slice(0, 10),
+          contact_id: amb.contact_id,
+        });
+        setSaved("Delivered — follow-up task created");
+        setTimeout(() => setSaved(""), 2500);
+      }
     }
-  }, []);
+  }, [amb]);
 
   if (!amb) {
     return (
