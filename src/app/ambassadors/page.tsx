@@ -76,11 +76,14 @@ export default function AmbassadorsPage() {
           setMessage(body.error);
         } else {
           const c = body.counts ?? {};
+          const errs = body.errors ?? [];
           setMessage(
             `${body.demo ? "Demo run (fixtures, nothing written)" : dry ? "Dry run (nothing written)" : "Sync complete"}: ` +
               `${c.affiliates_fetched ?? 0} affiliates, ${c.referrals_fetched ?? 0} referrals, ` +
               `${c.payments_fetched ?? 0} payments${
-                body.errors && body.errors.length > 0 ? ` · ${body.errors.length} warnings` : ""
+                errs.length > 0
+                  ? ` · ${errs.length} warning${errs.length > 1 ? "s" : ""}: ${errs[0]}${errs.length > 1 ? " (…)" : ""}`
+                  : ""
               }`
           );
         }
@@ -263,6 +266,9 @@ export default function AmbassadorsPage() {
                     {r.counts && typeof r.counts.affiliates_fetched === "number"
                       ? ` · ${r.counts.affiliates_fetched} affiliates`
                       : ""}
+                    {r.errors && r.errors.length > 0 ? (
+                      <span className="block text-xs text-rose-500">{r.errors[0]}</span>
+                    ) : null}
                   </span>
                 </li>
               ))}
