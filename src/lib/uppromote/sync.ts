@@ -53,15 +53,27 @@ export async function runBackfill(sb: Sb, opts: BackfillOptions): Promise<Backfi
   runId = (runRow?.id as string) ?? null;
 
   try {
-    // ---- 1. Fetch ----
+    // ---- 1. Fetch — each collection independently, so one missing/renamed
+    // endpoint degrades that collection to empty (with a warning) instead of
+    // killing the whole run. Affiliates are the only hard requirement.
+    const fetchCollection = async (path: string, required: boolean) => {
+      try {
+        return await upGetAll(path);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (required) throw e;
+        errors.push(`${path} skipped: ${msg}`);
+        return [] as Record<string, unknown>[];
+      }
+    };
     const [affRows, refRows, payRows, couponRows] = demo
       ? [FIXTURE_AFFILIATES, FIXTURE_REFERRALS, FIXTURE_PAYMENTS, FIXTURE_COUPONS]
-      : await Promise.all([
-          upGetAll("/affiliates"),
-          upGetAll("/referrals"),
-          upGetAll("/payments"),
-          upGetAll("/coupons"),
-        ]);
+      : [
+          await fetchCollection("/affiliates", true),
+          await fetchCollection("/referrals", false),
+          await fetchCollection("/payments", false),
+          await fetchCollection("/coupons", false),
+        ];
     counts.affiliates_fetched = affRows.length;
     counts.referrals_fetched = refRows.length;
     counts.payments_fetched = payRows.length;
