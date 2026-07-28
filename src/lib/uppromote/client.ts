@@ -97,19 +97,54 @@ export function listRows(body: unknown): Record<string, unknown>[] {
   return [];
 }
 
-/** Page through a list endpoint until a short/empty page. Caps at maxPages. */
+/** Read a numeric pagination hint (e.g. last_page) from a list envelope. */
+function pageHint(body: unknown, key: string): number | null {
+  if (!body || typeof body !== "object") return null;
+  const top = (body as Record<string, unknown>)[key];
+  if (typeof top === "number") return top;
+  for (const nested of ["meta", "data"]) {
+    const inner = (body as Record<string, unknown>)[nested];
+    if (inner && typeof inner === "object") {
+      const v = (inner as Record<string, unknown>)[key];
+      if (typeof v === "number") return v;
+    }
+  }
+  return null;
+}
+
+/**
+ * Page through a list endpoint until it's exhausted. The server may ignore
+ * our page-size parameter (observed: /affiliates returns 10/page regardless),
+ * so never stop on "short page" — stop on the envelope's last_page when
+ * present, an empty page, or a page of already-seen rows (guards against
+ * servers that ignore `page` too). Caps at maxPages as a backstop.
+ */
 export async function upGetAll(
   path: string,
   opts: { limit?: number; maxPages?: number; extraParams?: Record<string, string | number> } = {}
 ): Promise<Record<string, unknown>[]> {
   const limit = opts.limit ?? 100;
-  const maxPages = opts.maxPages ?? 50;
+  const maxPages = opts.maxPages ?? 200;
   const all: Record<string, unknown>[] = [];
+  const seen = new Set<string>();
   for (let page = 1; page <= maxPages; page++) {
-    const body = await upGet(path, { ...opts.extraParams, page, limit });
+    // Send both common page-size spellings; extras are harmless.
+    const body = await upGet(path, { ...opts.extraParams, page, limit, per_page: limit });
     const rows = listRows(body);
-    all.push(...rows);
-    if (rows.length < limit) break;
+    if (rows.length === 0) break;
+    let fresh = 0;
+    for (const row of rows) {
+      const key = String(row.id ?? JSON.stringify(row));
+      if (seen.has(key)) continue;
+      seen.add(key);
+      all.push(row);
+      fresh++;
+    }
+    if (fresh === 0) break; // server ignored `page` — same rows again
+    const lastPage = pageHint(body, "last_page");
+    if (lastPage !== null && page >= lastPage) break;
+    const total = pageHint(body, "total");
+    if (total !== null && all.length >= total) break;
     // Stay well under the 120 req/min store-wide limit.
     await new Promise((r) => setTimeout(r, 600));
   }
