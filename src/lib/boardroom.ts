@@ -38,7 +38,7 @@ export async function gatherSnapshot(db: SupabaseClient): Promise<Snapshot> {
   const today = new Date().toISOString().slice(0, 10);
   const since14 = new Date(Date.now() - 14 * 86400000).toISOString();
 
-  const [contactsRes, dealsRes, tasksRes, interactionsRes, eventsRes] = await Promise.all([
+  const [contactsRes, dealsRes, tasksRes, interactionsRes, eventsRes, ambassadorsRes, shipmentsRes] = await Promise.all([
     db
       .from("contacts")
       .select(
@@ -60,6 +60,14 @@ export async function gatherSnapshot(db: SupabaseClient): Promise<Snapshot> {
       .gte("date", today)
       .order("date")
       .limit(8),
+    // Growth OS: the UpPromote-synced ambassador program (tables may not
+    // exist on unmigrated installs — errors just yield empty data).
+    db
+      .from("ambassadors")
+      .select(
+        "first_name,last_name,email,uppromote_status,lifecycle,tier,total_referrals,total_revenue,total_commission,unpaid_commission,last_sale_at,contact_id,uppromote_created_at"
+      ),
+    db.from("sample_shipments").select("contact_id,quantity,status,delivered_at,content_received"),
   ]);
 
   type Row = Record<string, unknown>;
@@ -86,6 +94,28 @@ export async function gatherSnapshot(db: SupabaseClient): Promise<Snapshot> {
   const posted = contacts.filter((c) => c.posted_content === true);
   const ambassadors = contacts.filter((c) => c.ambassador_signup === true);
   const totalSales = contacts.reduce((sum, c) => sum + n(c.sales_generated), 0);
+
+  const program = (ambassadorsRes.data ?? []) as Row[];
+  const shipments = (shipmentsRes.data ?? []) as Row[];
+  const programActive = program.filter((a) => s(a.uppromote_status) === "active");
+  const programSelling = program.filter((a) => n(a.total_referrals) > 0);
+  const programRevenue = program.reduce((sum, a) => sum + n(a.total_revenue), 0);
+  const programUnpaid = program.reduce((sum, a) => sum + n(a.unpaid_commission), 0);
+  const shippedBottles = shipments
+    .filter((sh) => ["Shipped", "Delivered", "Followed up"].includes(s(sh.status)))
+    .reduce((sum, sh) => sum + n(sh.quantity), 0);
+  const deliveredNoContent = shipments.filter(
+    (sh) => ["Delivered", "Followed up"].includes(s(sh.status)) && sh.content_received !== true
+  );
+  const unlinked = program.filter((a) => !a.contact_id);
+  const ambassadorLine = (a: Row) =>
+    `${`${s(a.first_name)} ${s(a.last_name)}`.trim() || s(a.email)} (${s(a.tier)}, ${s(
+      a.lifecycle
+    )}, UpPromote ${s(a.uppromote_status)})${
+      n(a.total_referrals) > 0
+        ? ` — ${n(a.total_referrals)} sales, ${fmtMoney(n(a.total_revenue))}`
+        : ""
+    }`;
 
   const openDeals = deals.filter((d) => !["Won", "Lost"].includes(s(d.stage)));
   const pipelineValue = openDeals.reduce((sum, d) => sum + n(d.value), 0);
@@ -115,6 +145,20 @@ export async function gatherSnapshot(db: SupabaseClient): Promise<Snapshot> {
     `Sales attributed to contacts: ${fmtMoney(totalSales)}`,
     `Deals: ${openDeals.length} open worth ${fmtMoney(pipelineValue)} | ${dueDeals.length} with next-steps due/overdue`,
     `Open tasks: ${tasks.length}`,
+    program.length > 0
+      ? `Ambassador program (UpPromote-synced, source of truth for sales/commission): ${program.length} ambassadors | ${programActive.length} active | ${programSelling.length} with sales | revenue ${fmtMoney(programRevenue)} | unpaid commission ${fmtMoney(programUnpaid)} | ${shippedBottles} bottles shipped of 1,000 allocated | ${deliveredNoContent.length} deliveries awaiting content | ${unlinked.length} not yet linked to a contact`
+      : "",
+    line(
+      "Ambassador roster (top 12 by revenue, then newest)",
+      [...program]
+        .sort(
+          (a, b) =>
+            n(b.total_revenue) - n(a.total_revenue) ||
+            s(b.uppromote_created_at).localeCompare(s(a.uppromote_created_at))
+        )
+        .slice(0, 12)
+        .map(ambassadorLine)
+    ),
     line(
       "Follow-ups due/overdue (top 10)",
       overdue.slice(0, 10).map(contactLine)
