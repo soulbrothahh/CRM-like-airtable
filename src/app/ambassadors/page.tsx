@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/components/AuthProvider";
 import { getSupabase } from "@/lib/supabase";
+import { ProgramPulse } from "@/components/ProgramPulse";
 import type { Ambassador, SyncRun } from "@/lib/types";
 
 // The Ambassadors hub: UpPromote-synced roster + sync health. UpPromote owns
@@ -177,6 +178,8 @@ export default function AmbassadorsPage() {
             <p className="text-sm text-taupe-600">{message}</p>
           </Card>
         )}
+
+        <ProgramPulse roster={roster} />
 
         <input
           value={search}
