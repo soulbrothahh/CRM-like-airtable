@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { getSupabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 import type {
   Ambassador,
   AmbassadorCoupon,
@@ -42,10 +43,14 @@ const LIFECYCLES: AmbassadorLifecycle[] = [
 
 export default function AmbassadorDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { session } = useAuth();
   const [amb, setAmb] = useState<Ambassador | null>(null);
   const [coupons, setCoupons] = useState<AmbassadorCoupon[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [shipments, setShipments] = useState<SampleShipment[]>([]);
+  const [posts, setPosts] = useState<{ id: string; platform: string; url: string; created_at: string }[]>([]);
+  const [postUrl, setPostUrl] = useState("");
+  const [postPlatform, setPostPlatform] = useState("TikTok");
   const [newQty, setNewQty] = useState(1);
   const [contactName, setContactName] = useState("");
   const [notesDraft, setNotesDraft] = useState("");
@@ -77,6 +82,12 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
         .eq("contact_id", a.contact_id)
         .order("created_at", { ascending: false });
       setShipments((ships as SampleShipment[]) ?? []);
+      const { data: cp } = await sb
+        .from("content_posts")
+        .select("id, platform, url, created_at")
+        .eq("contact_id", a.contact_id)
+        .order("created_at", { ascending: false });
+      setPosts((cp as { id: string; platform: string; url: string; created_at: string }[]) ?? []);
     }
   }, [params.id]);
 
@@ -204,6 +215,56 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
       }
     }
   }, [amb]);
+
+  const pullShopify = useCallback(async () => {
+    if (!session?.access_token || !amb) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/shopify/pull", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ambassador_id: amb.id }),
+      });
+      const body = (await res.json()) as { error?: string; found?: boolean; order?: string; status?: string; message?: string };
+      setSaved(
+        body.error ?? (body.found ? `Shopify: ${body.order} → ${body.status}` : body.message ?? "No match")
+      );
+      setTimeout(() => setSaved(""), 3500);
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  }, [session, amb, load]);
+
+  const logContent = useCallback(async () => {
+    const sb = getSupabase();
+    if (!sb || !amb?.contact_id || !postUrl.trim()) return;
+    const { data, error } = await sb
+      .from("content_posts")
+      .insert({
+        contact_id: amb.contact_id,
+        platform: postPlatform,
+        url: postUrl.trim(),
+        posted_at: new Date().toISOString().slice(0, 10),
+      })
+      .select("id, platform, url, created_at")
+      .single();
+    if (!error && data) {
+      setPosts((prev) => [data as { id: string; platform: string; url: string; created_at: string }, ...prev]);
+      setPostUrl("");
+      // Mark their most recent delivered shipment as content-received.
+      const delivered = shipments.find((sh) => sh.status === "Delivered" || sh.status === "Followed up");
+      if (delivered && !delivered.content_received) {
+        await sb.from("sample_shipments").update({ content_received: true }).eq("id", delivered.id);
+        setShipments((prev) => prev.map((sh) => (sh.id === delivered.id ? { ...sh, content_received: true } : sh)));
+      }
+      setSaved("Content logged");
+      setTimeout(() => setSaved(""), 2000);
+    }
+  }, [amb, postUrl, postPlatform, shipments]);
 
   if (!amb) {
     return (
@@ -421,6 +482,13 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
                 >
                   ＋ Plan shipment
                 </button>
+                <button
+                  onClick={() => void pullShopify()}
+                  disabled={busy}
+                  className="rounded-xl px-3 py-2 text-xs font-semibold text-taupe-600 ring-1 ring-night-900/10 hover:bg-night-900/[0.04] disabled:opacity-50"
+                >
+                  {busy ? "Working…" : "⇩ Pull from Shopify"}
+                </button>
               </div>
               {shipments.length > 0 && (
                 <ul className="mt-3 space-y-2">
@@ -457,6 +525,59 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
                       <span className="text-xs text-taupe-400">
                         {sh.delivered_at || sh.shipped_at || sh.created_at.slice(0, 10)}
                       </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </section>
+
+        {/* Content */}
+        <section className="rounded-2xl bg-cream-50 p-4 ring-1 ring-night-900/5">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-taupe-500">Content</h2>
+          {!amb.contact_id ? (
+            <p className="mt-2 text-sm text-taupe-600">Link their CRM contact first to log content.</p>
+          ) : (
+            <>
+              <div className="mt-2 flex items-center gap-2">
+                <select
+                  value={postPlatform}
+                  onChange={(e) => setPostPlatform(e.target.value)}
+                  className="input w-28 px-2 py-2 text-xs"
+                >
+                  {["TikTok", "Instagram", "YouTube", "Other"].map((p) => (
+                    <option key={p}>{p}</option>
+                  ))}
+                </select>
+                <input
+                  value={postUrl}
+                  onChange={(e) => setPostUrl(e.target.value)}
+                  placeholder="Paste the post URL…"
+                  className="input min-w-0 flex-1"
+                />
+                <button
+                  onClick={() => void logContent()}
+                  disabled={!postUrl.trim()}
+                  className="btn-gold rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                >
+                  ＋ Log
+                </button>
+              </div>
+              {posts.length > 0 && (
+                <ul className="mt-3 space-y-1.5">
+                  {posts.map((p) => (
+                    <li key={p.id} className="flex items-center gap-2 text-sm">
+                      <span className="w-20 shrink-0 text-xs font-semibold text-taupe-500">{p.platform}</span>
+                      <a
+                        href={p.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="min-w-0 flex-1 truncate text-gold-700 hover:underline"
+                      >
+                        {p.url}
+                      </a>
+                      <span className="text-xs text-taupe-400">{p.created_at.slice(0, 10)}</span>
                     </li>
                   ))}
                 </ul>
