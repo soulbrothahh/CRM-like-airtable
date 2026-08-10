@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getSupabase } from "@/lib/supabase";
 import { useData } from "./DataProvider";
 import { Modal } from "./Modal";
 import { Select } from "./ContactForm";
@@ -39,26 +40,62 @@ export function QuickActions({
     }
   }
 
+  // Bottles live in sample_shipments (single source of truth, shared with the
+  // Ambassadors hub). contacts.bottle_* is deprecated — read-only legacy.
   const approve = () =>
     run(async () => {
       await update(contact.id, {
         bottle_recipient: true,
         status: "Approved for Bottles",
-        bottle_status:
-          contact.shipping_address.trim() === "" ? "Need address" : "Ready to send",
         bottle_priority:
           contact.bottle_priority === "Low" ? "Medium" : contact.bottle_priority,
       });
+      const sb = getSupabase();
+      if (sb) {
+        // Idempotent: one queued shipment per contact.
+        const { data: existing } = await sb
+          .from("sample_shipments")
+          .select("id")
+          .eq("contact_id", contact.id)
+          .limit(1)
+          .maybeSingle();
+        if (!existing) {
+          await sb.from("sample_shipments").insert({
+            contact_id: contact.id,
+            quantity: contact.bottle_quantity ?? 1,
+            status: contact.shipping_address.trim() === "" ? "Planned" : "Ready",
+            shipping_address: contact.shipping_address,
+          });
+        }
+      }
     });
 
   const markSent = () =>
     run(async () => {
-      await update(contact.id, {
-        bottle_status: "Sent",
-        status: "Bottle Sent",
-        date_sent: todayISO(),
-        bottle_recipient: true,
-      });
+      await update(contact.id, { status: "Bottle Sent", bottle_recipient: true });
+      const sb = getSupabase();
+      if (!sb) return;
+      const { data: latest } = await sb
+        .from("sample_shipments")
+        .select("id, status")
+        .eq("contact_id", contact.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latest && ["Shipped", "Delivered", "Followed up"].includes(String(latest.status))) {
+        return; // already sent — no double status writes, no double interaction
+      }
+      const patch = { status: "Shipped", shipped_at: todayISO(), updated_at: new Date().toISOString() };
+      if (latest) {
+        await sb.from("sample_shipments").update(patch).eq("id", latest.id);
+      } else {
+        await sb.from("sample_shipments").insert({
+          contact_id: contact.id,
+          quantity: contact.bottle_quantity ?? 1,
+          shipping_address: contact.shipping_address,
+          ...patch,
+        });
+      }
       await createInteraction({
         contact_id: contact.id,
         date: todayISO(),

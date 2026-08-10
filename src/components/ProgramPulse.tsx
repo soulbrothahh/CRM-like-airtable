@@ -14,6 +14,7 @@ const BOTTLE_ALLOCATION = 1000;
 interface PulseData {
   deliveredContacts: Set<string>;
   shippedBottles: number;
+  deliveredBottles: number;
   plannedBottles: number;
   contentContacts: Set<string>;
 }
@@ -33,12 +34,13 @@ export function ProgramPulse({ roster }: { roster: Ambassador[] }) {
       if (!active) return;
       const deliveredContacts = new Set<string>();
       let shippedBottles = 0;
+      let deliveredBottles = 0;
       let plannedBottles = 0;
       for (const s of ships ?? []) {
         const qty = Number(s.quantity) || 0;
         if (s.status === "Delivered" || s.status === "Followed up") {
           deliveredContacts.add(s.contact_id as string);
-          shippedBottles += qty;
+          deliveredBottles += qty;
         } else if (s.status === "Shipped") {
           shippedBottles += qty;
         } else {
@@ -46,7 +48,7 @@ export function ProgramPulse({ roster }: { roster: Ambassador[] }) {
         }
       }
       const contentContacts = new Set<string>((posts ?? []).map((p) => p.contact_id as string));
-      setExtra({ deliveredContacts, shippedBottles, plannedBottles, contentContacts });
+      setExtra({ deliveredContacts, shippedBottles, deliveredBottles, plannedBottles, contentContacts });
     })();
     return () => {
       active = false;
@@ -111,7 +113,7 @@ export function ProgramPulse({ roster }: { roster: Ambassador[] }) {
 
   const maxWeek = Math.max(1, ...weeks.map((w) => w.count));
   const signedMax = Math.max(1, funnel[0].count);
-  const shipped = extra?.shippedBottles ?? 0;
+  const shipped = (extra?.shippedBottles ?? 0) + (extra?.deliveredBottles ?? 0);
   const anyRevenue = leaders.some((a) => Number(a.total_revenue) > 0);
   const medals = ["🥇", "🥈", "🥉", "4", "5"];
 
@@ -222,9 +224,19 @@ export function ProgramPulse({ roster }: { roster: Ambassador[] }) {
             style={{ width: `${Math.min(100, Math.max(shipped > 0 ? 1.5 : 0, (shipped / BOTTLE_ALLOCATION) * 100))}%` }}
           />
         </div>
-        <div className="mt-2 flex justify-between text-[11px] text-taupe-500">
-          <span>{shipped} shipped or delivered</span>
-          <span>{extra?.plannedBottles ?? 0} planned</span>
+        <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px]">
+          <div>
+            <p className="text-sm font-bold tabular-nums">{extra?.plannedBottles ?? 0}</p>
+            <p className="text-taupe-500">planned</p>
+          </div>
+          <div>
+            <p className="text-sm font-bold tabular-nums">{extra?.shippedBottles ?? 0}</p>
+            <p className="text-taupe-500">shipped</p>
+          </div>
+          <div>
+            <p className="text-sm font-bold tabular-nums">{extra?.deliveredBottles ?? 0}</p>
+            <p className="text-taupe-500">delivered</p>
+          </div>
         </div>
         <p className="mt-2 text-[11px] text-taupe-400">
           Every bottle is logged against an ambassador — this bar is the 1,000-bottle deployment
