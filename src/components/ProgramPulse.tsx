@@ -190,6 +190,11 @@ export function ProgramPulse({ roster }: { roster: Ambassador[] }) {
               )}
               <span className="tabular-nums text-taupe-600">
                 {anyRevenue ? `$${Number(a.total_revenue).toFixed(0)}` : `${a.total_referrals} sales`}
+                {a.pending_referrals > 0 && (
+                  <span className="ml-1 text-[10px] font-bold text-gold-600" title="Includes pending referrals">
+                    ⏳
+                  </span>
+                )}
               </span>
             </li>
           ))}

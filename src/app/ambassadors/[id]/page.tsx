@@ -315,6 +315,12 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
             {amb.program_name && <Chip text={amb.program_name} tone="muted" />}
             {amb.email_verified === false && <Chip text="email unverified" tone="rose" />}
             {amb.w9_on_file && <Chip text="W-9 on file" tone="muted" />}
+            {amb.pending_referrals > 0 && (
+              <Chip
+                text={`${amb.pending_referrals} pending sale${amb.pending_referrals === 1 ? "" : "s"} (not banked yet)`}
+                tone="gold"
+              />
+            )}
           </div>
           {amb.referral_link && (
             <div className="mt-3 flex items-center gap-2">
@@ -345,9 +351,9 @@ export default function AmbassadorDetailPage({ params }: { params: { id: string 
             </div>
           )}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Money label="Revenue" value={amb.total_revenue} />
+            <Money label="Tracked sales" value={amb.total_revenue} />
             <Money label="Commission" value={amb.total_commission} />
-            <Money label="Unpaid" value={amb.unpaid_commission} />
+            <Money label="Owed (approved)" value={amb.approved_commission} />
             <div className="rounded-xl bg-cream-100 p-3 ring-1 ring-night-900/5">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-taupe-500">
                 Referrals
