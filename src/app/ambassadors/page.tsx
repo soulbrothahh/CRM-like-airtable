@@ -81,7 +81,8 @@ export default function AmbassadorsPage() {
           const errs = body.errors ?? [];
           setMessage(
             `${body.demo ? "Demo run (fixtures, nothing written)" : dry ? "Dry run (nothing written)" : "Sync complete"}: ` +
-              `${c.affiliates_fetched ?? 0} affiliates, ${c.referrals_fetched ?? 0} referrals, ` +
+              `${c.affiliates_fetched ?? 0} affiliates, ${c.referrals_fetched ?? 0} referrals` +
+              `${(c.referrals_pending ?? 0) > 0 ? ` (${c.referrals_pending} pending)` : ""}, ` +
               `${c.payments_fetched ?? 0} payments${
                 errs.length > 0
                   ? ` · ${errs.length} warning${errs.length > 1 ? "s" : ""}: ${errs[0]}${errs.length > 1 ? " (…)" : ""}`
@@ -112,7 +113,7 @@ export default function AmbassadorsPage() {
 
   const totals = useMemo(() => {
     const revenue = roster.reduce((s, a) => s + (Number(a.total_revenue) || 0), 0);
-    const commission = roster.reduce((s, a) => s + (Number(a.total_commission) || 0), 0);
+    const commission = roster.reduce((s, a) => s + (Number(a.approved_commission) || 0), 0);
     const approved = roster.filter(
       (a) => a.uppromote_status === "active" || a.uppromote_status === "approved"
     ).length;
@@ -192,7 +193,7 @@ export default function AmbassadorsPage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Ambassadors" value={String(roster.length)} />
           <Stat label="Active" value={String(totals.approved)} />
-          <Stat label="Attributed revenue" value={`$${totals.revenue.toFixed(2)}`} />
+          <Stat label="Tracked sales" value={`$${totals.revenue.toFixed(2)}`} />
           <Stat label="Commission owed" value={`$${totals.commission.toFixed(2)}`} />
         </div>
 
@@ -230,7 +231,7 @@ export default function AmbassadorsPage() {
                     <th className="px-4 py-3 font-semibold">UpPromote</th>
                     <th className="px-4 py-3 font-semibold">Lifecycle</th>
                     <th className="px-4 py-3 text-right font-semibold">Referrals</th>
-                    <th className="px-4 py-3 text-right font-semibold">Revenue</th>
+                    <th className="px-4 py-3 text-right font-semibold">Tracked sales</th>
                     <th className="px-4 py-3 text-right font-semibold">Commission</th>
                     <th className="px-4 py-3 font-semibold">Last sale</th>
                   </tr>
@@ -251,6 +252,11 @@ export default function AmbassadorsPage() {
                       <td className="px-4 py-3 text-right tabular-nums">{a.total_referrals}</td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         ${Number(a.total_revenue).toFixed(2)}
+                        {a.pending_referrals > 0 && (
+                          <span className="ml-1 text-[10px] font-bold text-gold-600" title={`${a.pending_referrals} pending referral(s)`}>
+                            ⏳
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         ${Number(a.total_commission).toFixed(2)}
@@ -397,8 +403,11 @@ function AmbassadorCard({ a }: { a: Ambassador }) {
           <p className="text-taupe-500">referrals</p>
         </div>
         <div>
-          <p className="font-bold tabular-nums">${Number(a.total_revenue).toFixed(0)}</p>
-          <p className="text-taupe-500">revenue</p>
+          <p className="font-bold tabular-nums">
+            ${Number(a.total_revenue).toFixed(0)}
+            {a.pending_referrals > 0 ? " ⏳" : ""}
+          </p>
+          <p className="text-taupe-500">tracked</p>
         </div>
         <div>
           <p className="font-bold tabular-nums">${Number(a.total_commission).toFixed(2)}</p>

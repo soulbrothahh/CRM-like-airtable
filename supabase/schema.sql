@@ -635,3 +635,10 @@ drop policy if exists "authed full access audit_logs" on public.audit_logs;
 create policy "authed full access audit_logs"
   on public.audit_logs for all to authenticated using (true) with check (true);
 
+
+-- ---------- pending vs earned commission (2026-07-31) ----------
+-- (also in migrations/2026-07-31-pending-referral-columns.sql)
+alter table public.ambassadors
+  add column if not exists pending_referrals  integer not null default 0,
+  add column if not exists pending_revenue    numeric not null default 0,
+  add column if not exists approved_commission numeric not null default 0;

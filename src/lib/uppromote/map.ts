@@ -74,6 +74,7 @@ export function mapAffiliate(row: Row): {
   w9_on_file: boolean;
   upline_uppromote_id: number | null;
   total_commission: number;
+  approved_commission: number;
   unpaid_commission: number;
   uppromote_created_at: string | null;
 } {
@@ -97,7 +98,8 @@ export function mapAffiliate(row: Row): {
     // Presence only — the W-9 URL itself is sensitive and never stored.
     w9_on_file: str(row, ["w9_form"]) !== "",
     upline_uppromote_id: num(row, ["up_line_affiliate_id", "parent_id", "upline_id"]),
-    total_commission: paid + approved + pending,
+    total_commission: paid + approved + pending, // all-in
+    approved_commission: approved, // actually owed now (approved, unpaid)
     unpaid_commission: approved + pending,
     uppromote_created_at: iso(row, ["created_at", "signup_date"]),
   };
@@ -123,9 +125,14 @@ export function mapReferral(row: Row): {
   commission: number;
   occurred_at: string | null;
 } {
+  const nestedAffiliate =
+    row.affiliate && typeof row.affiliate === "object"
+      ? (row.affiliate as Record<string, unknown>)
+      : null;
   return {
     uppromote_referral_id: num(row, ["id", "referral_id"]),
-    uppromote_affiliate_id: num(row, ["affiliate_id"]),
+    uppromote_affiliate_id:
+      num(row, ["affiliate_id"]) ?? (nestedAffiliate ? num(nestedAffiliate, ["id"]) : null),
     order_id: str(row, ["order_id", "shopify_order_id"]),
     order_number: str(row, ["order_number", "order_name"]),
     tracking_type: str(row, ["tracking_type", "referral_type", "type"]),

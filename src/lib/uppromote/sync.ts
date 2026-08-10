@@ -14,6 +14,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { upGetAll, uppromoteConfigured } from "./client";
 import { affiliateCoupons, mapAffiliate, mapCoupon, mapPayment, mapReferral, num } from "./map";
+import { aggregateReferrals, emptyRollup, type ReferralRow } from "./rollups";
 import {
   FIXTURE_AFFILIATES,
   FIXTURE_COUPONS,
@@ -129,6 +130,7 @@ export async function runBackfill(sb: Sb, opts: BackfillOptions): Promise<Backfi
         synced_at: now,
       }));
     counts.referrals_upserted = referrals.length;
+    counts.referrals_pending = referrals.filter((r) => r.status === "pending").length;
     if (!dryRun && referrals.length > 0) {
       const { error } = await sb
         .from("referrals")
@@ -216,7 +218,27 @@ export async function runBackfill(sb: Sb, opts: BackfillOptions): Promise<Backfi
       counts.duplicates_queued = 0;
     }
 
-    // ---- 7. Rollups (computed from mirrored referrals/payouts) ----
+    // ---- 7. Re-link any orphaned referral/payout rows (self-healing:
+    // rows synced before their ambassador existed, or whose affiliate id
+    // arrived in a shape an older mapper missed, get attached here).
+    if (!dryRun) {
+      let relinked = 0;
+      const { data: orphans } = await sb
+        .from("referrals")
+        .select("id, uppromote_affiliate_id")
+        .is("ambassador_id", null)
+        .not("uppromote_affiliate_id", "is", null);
+      for (const o of orphans ?? []) {
+        const ambId = idMap.get(Number(o.uppromote_affiliate_id));
+        if (ambId) {
+          await sb.from("referrals").update({ ambassador_id: ambId }).eq("id", o.id);
+          relinked++;
+        }
+      }
+      counts.referrals_relinked = relinked;
+    }
+
+    // ---- 8. Rollups (computed from mirrored referrals) ----
     if (!dryRun) {
       counts.rollups_updated = await recomputeRollups(sb, Array.from(idMap.values()));
     }
@@ -287,7 +309,9 @@ async function linkContacts(sb: Sb): Promise<{ linked: number; queued: number }>
   return { linked, queued };
 }
 
-// Referral-derived rollups only: sale counts, revenue, first/last sale dates.
+// Referral-derived rollups: sale counts, tracked sales, pending markers,
+// first/last sale dates. One shared status rule (rollups.ts): everything
+// counts except explicitly voided referrals; pending is tracked separately.
 // Commission totals are NOT touched here — the affiliate record's
 // paid/approved/pending amounts are authoritative and land in the upsert.
 async function recomputeRollups(sb: Sb, ambassadorIds: string[]): Promise<number> {
@@ -297,38 +321,11 @@ async function recomputeRollups(sb: Sb, ambassadorIds: string[]): Promise<number
     .select("ambassador_id, status, revenue, occurred_at")
     .in("ambassador_id", ambassadorIds);
 
-  const agg = new Map<
-    string,
-    { n: number; revenue: number; first: string | null; last: string | null }
-  >();
-  for (const id of ambassadorIds) {
-    agg.set(id, { n: 0, revenue: 0, first: null, last: null });
-  }
-  for (const r of refs ?? []) {
-    const a = agg.get(r.ambassador_id as string);
-    if (!a) continue;
-    const status = String(r.status);
-    if (status === "denied" || status === "rejected") continue;
-    a.n += 1;
-    a.revenue += Number(r.revenue) || 0;
-    const at = r.occurred_at ? String(r.occurred_at) : null;
-    if (at) {
-      if (!a.first || at < a.first) a.first = at;
-      if (!a.last || at > a.last) a.last = at;
-    }
-  }
-
+  const agg = aggregateReferrals((refs ?? []) as ReferralRow[]);
   let updated = 0;
-  for (const [id, a] of agg) {
-    const { error } = await sb
-      .from("ambassadors")
-      .update({
-        total_referrals: a.n,
-        total_revenue: a.revenue,
-        first_sale_at: a.first,
-        last_sale_at: a.last,
-      })
-      .eq("id", id);
+  for (const id of ambassadorIds) {
+    const a = agg.get(id) ?? emptyRollup();
+    const { error } = await sb.from("ambassadors").update(a).eq("id", id);
     if (!error) updated++;
   }
   return updated;

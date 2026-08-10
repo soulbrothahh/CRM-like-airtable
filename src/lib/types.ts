@@ -342,9 +342,12 @@ export interface Ambassador {
   w9_on_file: boolean | null; // status only; the document is never stored
   upline_uppromote_id: number | null;
   total_referrals: number;
-  total_revenue: number;
-  total_commission: number;
-  unpaid_commission: number;
+  total_revenue: number; // UpPromote tracked sales (subtotal, excl. shipping/tax)
+  pending_referrals: number;
+  pending_revenue: number;
+  total_commission: number; // all-in: paid + approved + pending
+  approved_commission: number; // actually owed now (approved, unpaid)
+  unpaid_commission: number; // approved + pending (legacy all-unpaid figure)
   first_sale_at: string | null;
   last_sale_at: string | null;
   uppromote_created_at: string | null;
