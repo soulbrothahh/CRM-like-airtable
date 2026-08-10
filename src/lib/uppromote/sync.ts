@@ -410,9 +410,12 @@ async function autoEnroll(
   // 2. One Planned bottle for every linked ambassador with no shipment at all.
   const { data: linkedAmbs } = await sb
     .from("ambassadors")
-    .select("id, contact_id")
+    .select("id, contact_id, wants_sample")
     .not("contact_id", "is", null);
+  // wants_sample false = they declined the free bottle at signup; null = legacy
+  // signups from before intake existed (keep enrolling those).
   const contactIds = (linkedAmbs ?? [])
+    .filter((a) => a.wants_sample !== false)
     .map((a) => a.contact_id as string)
     .filter(Boolean);
   bottlesPlanned += newContactBottles; // dry-run: new contacts have no shipments yet
