@@ -24,7 +24,9 @@ export default function AmbassadorsPage() {
   const [status, setStatus] = useState<SyncStatus | null>(null);
   const [roster, setRoster] = useState<Ambassador[]>([]);
   const [search, setSearch] = useState("");
-  const [busy, setBusy] = useState<"" | "dry" | "sync">("");
+  const [bottleFilter, setBottleFilter] = useState("All bottles");
+  const [bottles, setBottles] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState<"" | "dry" | "sync" | "bottles">("");
   const [message, setMessage] = useState("");
 
   const token = session?.access_token ?? "";
@@ -39,6 +41,13 @@ export default function AmbassadorsPage() {
         .order("created_at", { ascending: false })
         .limit(200);
       setRoster((data as Ambassador[]) ?? []);
+      const { data: ships } = await sb
+        .from("sample_shipments")
+        .select("contact_id, status, created_at")
+        .order("created_at", { ascending: true });
+      const map: Record<string, string> = {};
+      for (const sh of ships ?? []) map[sh.contact_id as string] = String(sh.status);
+      setBottles(map);
     }
     if (token) {
       try {
@@ -100,16 +109,54 @@ export default function AmbassadorsPage() {
     [token, status, loadAll]
   );
 
+  const syncBottles = useCallback(async () => {
+    if (!token) return;
+    setBusy("bottles");
+    setMessage("");
+    try {
+      const res = await fetch("/api/shopify/pull", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const body = (await res.json()) as {
+        error?: string;
+        checked?: number;
+        matched?: number;
+        updated?: number;
+        errors?: string[];
+      };
+      setMessage(
+        body.error ??
+          `Bottle sync: ${body.checked ?? 0} checked, ${body.matched ?? 0} matched in Shopify, ${body.updated ?? 0} updated${
+            body.errors && body.errors.length > 0 ? ` · ${body.errors[0]}` : ""
+          }`
+      );
+    } catch {
+      setMessage("Bottle sync failed — try again.");
+    } finally {
+      setBusy("");
+      void loadAll();
+    }
+  }, [token, loadAll]);
+
+  const bottleFor = useCallback(
+    (a: Ambassador) => (a.contact_id ? bottles[a.contact_id] ?? "None" : "None"),
+    [bottles]
+  );
+
   const filtered = useMemo(() => {
+    const base =
+      bottleFilter === "All bottles" ? roster : roster.filter((a) => bottleFor(a) === bottleFilter);
     const q = search.trim().toLowerCase();
-    if (!q) return roster;
-    return roster.filter((a) =>
+    if (!q) return base;
+    return base.filter((a) =>
       [`${a.first_name} ${a.last_name}`, a.email, a.instagram, a.tiktok, a.program_name, a.tier, a.lifecycle]
         .join(" ")
         .toLowerCase()
         .includes(q)
     );
-  }, [roster, search]);
+  }, [roster, search, bottleFilter, bottleFor]);
 
   const totals = useMemo(() => {
     const revenue = roster.reduce((s, a) => s + (Number(a.total_revenue) || 0), 0);
@@ -151,6 +198,13 @@ export default function AmbassadorsPage() {
               {busy === "dry" ? "Running…" : "Dry run"}
             </button>
             <button
+              onClick={() => void syncBottles()}
+              disabled={busy !== "" || !token}
+              className="rounded-xl px-3 py-2 text-xs font-semibold text-taupe-600 ring-1 ring-night-900/10 transition hover:bg-night-900/[0.04] disabled:opacity-50"
+            >
+              {busy === "bottles" ? "Checking…" : "Sync bottles"}
+            </button>
+            <button
               onClick={() => void runSync(false)}
               disabled={busy !== "" || !token || !status?.configured}
               className="btn-gold rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-50"
@@ -182,12 +236,26 @@ export default function AmbassadorsPage() {
 
         <ProgramPulse roster={roster} />
 
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search ambassadors — name, email, handle, tier…"
-          className="input w-full"
-        />
+        <div className="flex gap-2">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search ambassadors — name, email, handle, tier…"
+            className="input min-w-0 flex-1"
+          />
+          <select
+            value={bottleFilter}
+            onChange={(e) => setBottleFilter(e.target.value)}
+            className="input w-36 px-2"
+            aria-label="Filter by bottle status"
+          >
+            {["All bottles", "None", "Planned", "Ready", "Shipped", "Delivered", "Followed up"].map(
+              (b) => (
+                <option key={b}>{b}</option>
+              )
+            )}
+          </select>
+        </div>
 
         {/* Stat strip */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -218,7 +286,7 @@ export default function AmbassadorsPage() {
             {/* Mobile cards */}
             <div className="space-y-2 md:hidden">
               {filtered.map((a) => (
-                <AmbassadorCard key={a.id} a={a} />
+                <AmbassadorCard key={a.id} a={a} bottle={bottleFor(a)} />
               ))}
             </div>
             {/* Desktop table */}
@@ -230,6 +298,7 @@ export default function AmbassadorsPage() {
                     <th className="px-4 py-3 font-semibold">Tier</th>
                     <th className="px-4 py-3 font-semibold">UpPromote</th>
                     <th className="px-4 py-3 font-semibold">Lifecycle</th>
+                    <th className="px-4 py-3 font-semibold">Bottle</th>
                     <th className="px-4 py-3 text-right font-semibold">Referrals</th>
                     <th className="px-4 py-3 text-right font-semibold">Tracked sales</th>
                     <th className="px-4 py-3 text-right font-semibold">Commission</th>
@@ -249,6 +318,9 @@ export default function AmbassadorsPage() {
                         <StatusChip status={a.uppromote_status} />
                       </td>
                       <td className="px-4 py-3 text-taupe-600">{a.lifecycle}</td>
+                      <td className="px-4 py-3">
+                        <BottleChip status={bottleFor(a)} />
+                      </td>
                       <td className="px-4 py-3 text-right tabular-nums">{a.total_referrals}</td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         ${Number(a.total_revenue).toFixed(2)}
@@ -386,7 +458,7 @@ function StatusChip({ status }: { status: string }) {
   );
 }
 
-function AmbassadorCard({ a }: { a: Ambassador }) {
+function AmbassadorCard({ a, bottle }: { a: Ambassador; bottle: string }) {
   return (
     <div className="rounded-2xl bg-cream-50 p-3.5 ring-1 ring-night-900/5">
       <div className="flex items-center justify-between gap-2">
@@ -396,6 +468,7 @@ function AmbassadorCard({ a }: { a: Ambassador }) {
       <div className="mt-1.5 flex items-center gap-2 text-xs text-taupe-500">
         <StatusChip status={a.uppromote_status} />
         <span>{a.lifecycle}</span>
+        <BottleChip status={bottle} />
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
         <div>
@@ -415,5 +488,22 @@ function AmbassadorCard({ a }: { a: Ambassador }) {
         </div>
       </div>
     </div>
+  );
+}
+
+
+function BottleChip({ status }: { status: string }) {
+  const cls =
+    status === "Delivered" || status === "Followed up"
+      ? "bg-sage-500/10 text-sage-600 ring-sage-500/20"
+      : status === "Shipped"
+        ? "bg-gold-400/15 text-gold-700 ring-gold-400/20"
+        : status === "None"
+          ? "bg-rose-500/10 text-rose-500 ring-rose-500/20"
+          : "bg-night-900/[0.04] text-taupe-600 ring-night-900/10";
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${cls}`}>
+      🌿 {status}
+    </span>
   );
 }

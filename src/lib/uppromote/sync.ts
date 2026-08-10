@@ -218,6 +218,19 @@ export async function runBackfill(sb: Sb, opts: BackfillOptions): Promise<Backfi
       counts.duplicates_queued = 0;
     }
 
+    // ---- 6b. Auto-enroll: every ambassador gets a contact and one Planned
+    // free sample bottle. Strictly idempotent: never a second contact, never
+    // a second bottle, never touches an ambassador with any shipment.
+    // Gated by AUTO_ENROLL_SAMPLE_BOTTLE (default on). Dry runs only report.
+    const autoEnrollOn = !["false", "0", "off"].includes(
+      String(process.env.AUTO_ENROLL_SAMPLE_BOTTLE ?? "true").toLowerCase()
+    );
+    if (autoEnrollOn) {
+      const enroll = await autoEnroll(sb, dryRun);
+      counts.contacts_created = enroll.contactsCreated;
+      counts.bottles_planned = enroll.bottlesPlanned;
+    }
+
     // ---- 7. Re-link any orphaned referral/payout rows (self-healing:
     // rows synced before their ambassador existed, or whose affiliate id
     // arrived in a shape an older mapper missed, get attached here).
@@ -329,4 +342,97 @@ async function recomputeRollups(sb: Sb, ambassadorIds: string[]): Promise<number
     if (!error) updated++;
   }
   return updated;
+}
+
+// Auto-enrollment: link-or-create a contact for every ambassador, then plan
+// exactly one free sample bottle for anyone who has no shipment in ANY
+// status. In dry-run mode this only counts what it would do.
+async function autoEnroll(
+  sb: Sb,
+  dryRun: boolean
+): Promise<{ contactsCreated: number; bottlesPlanned: number }> {
+  let contactsCreated = 0;
+  let bottlesPlanned = 0;
+  const ts = new Date().toISOString();
+
+  // 1. Ambassadors still unlinked after the email-match pass have no
+  // matching contact — create one (same shape as the UI button).
+  const { data: unlinked } = await sb
+    .from("ambassadors")
+    .select("id, email, first_name, last_name, instagram, tiktok")
+    .is("contact_id", null);
+  let newContactBottles = 0;
+  for (const amb of unlinked ?? []) {
+    if (dryRun) {
+      // Predict: an exact email match would be linked, not created.
+      const email = String(amb.email || "").toLowerCase();
+      if (email) {
+        const { data: m } = await sb.from("contacts").select("id").ilike("email", email).limit(1);
+        if (m && m.length > 0) continue;
+      }
+      contactsCreated++;
+      newContactBottles++;
+      continue;
+    }
+    contactsCreated++;
+    const { data: coupon } = await sb
+      .from("ambassador_coupons")
+      .select("code")
+      .eq("ambassador_id", amb.id)
+      .limit(1)
+      .maybeSingle();
+    const name = `${amb.first_name} ${amb.last_name}`.trim() || String(amb.email || "Ambassador");
+    const { data: created, error } = await sb
+      .from("contacts")
+      .insert({
+        name,
+        email: String(amb.email || ""),
+        instagram: String(amb.instagram || ""),
+        tiktok: String(amb.tiktok || ""),
+        contact_type: "Ambassador",
+        status: "Ambassador Signed Up",
+        source: "UpPromote",
+        outreach_status: "Not contacted",
+        ambassador_signup: true,
+        discount_code: coupon?.code ?? "",
+        created_at: ts,
+        updated_at: ts,
+      })
+      .select("id")
+      .single();
+    if (!error && created) {
+      await sb.from("ambassadors").update({ contact_id: created.id }).eq("id", amb.id);
+    } else {
+      contactsCreated--; // insert failed; don't overcount
+    }
+  }
+
+  // 2. One Planned bottle for every linked ambassador with no shipment at all.
+  const { data: linkedAmbs } = await sb
+    .from("ambassadors")
+    .select("id, contact_id")
+    .not("contact_id", "is", null);
+  const contactIds = (linkedAmbs ?? [])
+    .map((a) => a.contact_id as string)
+    .filter(Boolean);
+  bottlesPlanned += newContactBottles; // dry-run: new contacts have no shipments yet
+  if (contactIds.length === 0) return { contactsCreated, bottlesPlanned };
+  const { data: existing } = await sb
+    .from("sample_shipments")
+    .select("contact_id")
+    .in("contact_id", contactIds);
+  const hasShipment = new Set((existing ?? []).map((r) => r.contact_id as string));
+  for (const cid of contactIds) {
+    if (hasShipment.has(cid)) continue;
+    hasShipment.add(cid); // guard against duplicate contact_ids in the roster
+    bottlesPlanned++;
+    if (dryRun) continue;
+    await sb.from("sample_shipments").insert({
+      contact_id: cid,
+      quantity: 1,
+      status: "Planned",
+      notes: "Auto-enrolled: free ambassador sample bottle",
+    });
+  }
+  return { contactsCreated, bottlesPlanned };
 }
